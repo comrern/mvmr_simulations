@@ -6,36 +6,8 @@ gendat <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   af = 0.4 
   n=2*ss
   
-  ## debug code- remove n=10000     nsnps=100     snpsc=100
-  
-  df <- as.data.frame(matrix(nrow=n))
-  df$V1 <- seq.int(nrow(df))
-  df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## change to obs proportions
-  
-  anc_key <- as.data.frame(quantile(df$X2))
-  anc_key$id <- seq.int(nrow(anc_key))
-  
-  anc_key$af <- c(0.31, 0.34, 0.36, 0.38, 0.4)
-  
-  G1 <- data.frame()
-  G2 <- data.frame()
-  
-  for (id in 1:5){
-    
-    ub = anc_key[anc_key$id==id,1]
-    lb = ifelse(id==1, 0, anc_key[anc_key$id==id-1,1] )
-    
-    n_subgroup = nrow(df[df$X2 > lb & df$X2 <= ub,])
-    af=anc_key[anc_key$id==id,3]
-    
-    G1_subgroup <- matrix(rbinom(n_subgroup*nsnps, 2, af), n_subgroup, nsnps)
-    G2_subgroup <- matrix(rbinom(n_subgroup*nsnps, 2, af), n_subgroup, snpsc)
-    
-    G1 <- rbind(G1, G1_subgroup)
-    G2 <- rbind(G2, G2_subgroup)
-    
-  }
-
+  G  <- matrix(rbinom(n*nsnps, 2, af), n, nsnps)
+  G2 <- matrix(rbinom(n*snpsc, 2, af), n, snpsc)
   
   means <- c(0, 0)                                   
   cov_matrix <- matrix(c(1, 0, 0, 1),
@@ -54,10 +26,11 @@ gendat <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   effs_x1 <- abs(rnorm(nsnps,0,0.06))
   effs_x2 <- abs(rnorm(snpsc,0,0.06))
   
-  df <- (cbind(df, G1, G2))
-  colnames(df) <- gsub("V","G",colnames(df))
+  df <- data.frame(cbind(G, G2))
+  colnames(df) <- gsub("X","G",colnames(df))
   
-  df[,"M"] <- as.matrix(G1[,])%*%effs_x1 + v_m
+  df[,"X2"] <- G2[,]%*%effs_x2 + v_x2               ## change to obs proportions
+  df[,"M"] <- G[,]%*%effs_x1 + v_m
   df[,"X1"] <- df[,"M"] + pi*df[,"X2"] + v_x1
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + v_y  
   
