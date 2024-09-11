@@ -1,3 +1,4 @@
+set.seed(1234)
 
 setwd("C:/Users/kb22541/Desktop/Analyses/simulation/")
 

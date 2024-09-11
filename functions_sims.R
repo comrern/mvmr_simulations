@@ -3,11 +3,19 @@
 
 gendat <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   
-  af = 0.4 
   n=2*ss
   
-  G  <- matrix(rbinom(n*nsnps, 2, af), n, nsnps)
-  G2 <- matrix(rbinom(n*snpsc, 2, af), n, snpsc)
+  
+  ## debug code- remove n=10000     nsnps=100     snpsc=100
+  
+  df <- as.data.frame(matrix(nrow=n))
+  df$V1 <- seq.int(nrow(df))
+  df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## change to obs proportions
+  
+  prob <-  0.4 + 0.3 * df$X2
+  
+  G  <- matrix(rbinom(n*nsnps, 2, prob), n, nsnps)
+  G2 <- matrix(rbinom(n*snpsc, 2, prob), n, snpsc)
   
   means <- c(0, 0)                                   
   cov_matrix <- matrix(c(1, 0, 0, 1),
@@ -26,10 +34,9 @@ gendat <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   effs_x1 <- abs(rnorm(nsnps,0,0.06))
   effs_x2 <- abs(rnorm(snpsc,0,0.06))
   
-  df <- data.frame(cbind(G, G2))
-  colnames(df) <- gsub("X","G",colnames(df))
+  df <- (cbind(df, G, G2))
+  colnames(df) <- gsub("V","G",colnames(df))
   
-  df[,"X2"] <- G2[,]%*%effs_x2 + v_x2               ## change to obs proportions
   df[,"M"] <- G[,]%*%effs_x1 + v_m
   df[,"X1"] <- df[,"M"] + pi*df[,"X2"] + v_x1
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + v_y  
