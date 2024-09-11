@@ -7,6 +7,7 @@ library(tidyverse)
 library(MASS)
 library(TwoSampleMR)
 library(MVMR)
+library(truncnorm)
 
 source('modes_sims.R')
 source('functions_sims.R')
