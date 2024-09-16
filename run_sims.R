@@ -1,6 +1,6 @@
 set.seed(1234)
 
-setwd("C:/Users/kb22541/Desktop/Analyses/simulation/")
+setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/")
 
 
 library(dplyr)
@@ -8,6 +8,7 @@ library(tidyverse)
 library(MASS)
 library(TwoSampleMR)
 library(MVMR)
+library(truncnorm)
 
 source('modes_sims.R')
 source('functions_sims.R')
@@ -33,10 +34,12 @@ for(j in 1:reps){
       snps = params[1]      
       snpsc = params[2]         
       nobs = params[3]
+      b1 = params[4]
+      b2 = params[5]
       pi = gm
       
       
-      dat <- gendat(snps, snpsc, nobs,0.3,0,pi)
+      dat <- gendat(snps, snpsc, nobs, b1 , b2, pi)
         #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
     #### 
     

@@ -6,16 +6,21 @@ gendat <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   n=2*ss
   
   
-  ## debug code- remove n=10000     nsnps=100     snpsc=100
+  ## debug code ##      n=20000     nsnps=100     snpsc=100      beta1=0    beta2=0.4
   
   df <- as.data.frame(matrix(nrow=n))
   df$V1 <- seq.int(nrow(df))
-  df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## change to obs proportions
+  df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
-  prob <-  0.4 + 0.3 * df$X2
+  prob <-  0.3 + 0.5 * df$X2  ## build probability vector based on value of X2 --> 
+                              ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
   
-  G  <- matrix(rbinom(n*nsnps, 2, prob), n, nsnps)
-  G2 <- matrix(rbinom(n*snpsc, 2, prob), n, snpsc)
+  prob_g1 <- rep(prob, times = nsnps)
+  prob_g2 <- rep(prob, times = snpsc)
+  
+
+  G  <- matrix(rbinom(n*nsnps, 2, prob_g1), n, nsnps)
+  G2 <- matrix(rbinom(n*snpsc, 2, prob_g2), n, snpsc)
   
   means <- c(0, 0)                                   
   cov_matrix <- matrix(c(1, 0, 0, 1),
@@ -41,7 +46,8 @@ gendat <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   df[,"X1"] <- df[,"M"] + pi*df[,"X2"] + v_x1
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + v_y  
   
-  data <- cbind.data.frame(df)
+
+  data <- df
   return(data)
 }
 
@@ -111,8 +117,8 @@ univariate_MR <- function(MR_dat){
   dat1 <- harmonise_data(exp1, out)
   dat2 <- harmonise_data(exp2, out)
   
-  dat1 <- dat1[dat1$pval.exposure <= 0.00000005,]
-  dat2 <- dat2[dat2$pval.exposure <= 0.00000005,]
+  dat1 <- dat1[dat1$pval.exposure <= 5e-8,]
+  dat2 <- dat2[dat2$pval.exposure <= 5e-8,]
   
   mr1 <- mr(dat1)
   mr2 <- mr(dat2)
