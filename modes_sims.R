@@ -6,7 +6,7 @@ setup <- function(k){
     
     snps = 100       #no of SNPs for X1
     snpsc = 100         #No of SNPs for X2/X3
-    nobs = 20000
+    nobs = 10000
     b1 = 0
     b2 = 0.8
   }
@@ -29,6 +29,14 @@ setup <- function(k){
     b2 = 0
   }
   
+  if(k=='D'){    ## No ancestry effect
+    
+    snps = 100       #no of SNPs for X1
+    snpsc = 100         #No of SNPs for X2/X3
+    nobs = 10000
+    b1 = 0.4
+    b2 = 0
+  }
   
   
   return(c(snps, snpsc, nobs, b1, b2))

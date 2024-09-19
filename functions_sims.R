@@ -1,7 +1,7 @@
 
 
 
-gendat <- function(nsnps,snpsc,ss,beta1,beta2,pi){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   
   n=2*ss
   
@@ -12,15 +12,27 @@ gendat <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   df$V1 <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
-  prob <-  0.3 + 0.5 * df$X2  ## build probability vector based on value of X2 --> 
+  prob_inc <-  0.3 + 0.5 * df$X2  ## build probability vector based on value of X2 --> 
                               ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
   
-  prob_g1 <- rep(prob, times = nsnps)
-  prob_g2 <- rep(prob, times = snpsc)
+  prob_dec <-  0.6 - 0.5 * df$X2
   
+  prob_tab <- as.data.frame(prob_inc)
+  prob_tab$prob_dec <- prob_dec
+  prob_tab$prob_cont <- 0.4
+  
+  g_prob_matrix <- as.data.frame(1:n)
+  
+  for (snp in 1:nsnps){
+    
+    g_prob_matrix[,snp] <- prob_tab[,sample(1:3,1)]
+    
+  }
+  
+  prob_list <- as.vector(t(g_prob_matrix))
 
-  G  <- matrix(rbinom(n*nsnps, 2, prob_g1), n, nsnps)
-  G2 <- matrix(rbinom(n*snpsc, 2, prob_g2), n, snpsc)
+  G  <- matrix(rbinom(n*nsnps, 2, prob_list), n, nsnps)
+  G2 <- matrix(rbinom(n*snpsc, 2, prob_list), n, snpsc)
   
   means <- c(0, 0)                                   
   cov_matrix <- matrix(c(1, 0, 0, 1),
@@ -33,17 +45,15 @@ gendat <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   
   v_x1 <- errors[,1]
   v_y <- errors[,2]
-  v_x2 <- rnorm(n,0,1)
-  v_m <- rnorm(n,0,1)
-  
-  effs_x1 <- abs(rnorm(nsnps,0,0.06))
-  effs_x2 <- abs(rnorm(snpsc,0,0.06))
+
+  effs_x1 <- abs(rnorm(nsnps,0,0.02))
+  effs_x2 <- abs(rnorm(snpsc,0,0.02))
   
   df <- (cbind(df, G, G2))
   colnames(df) <- gsub("V","G",colnames(df))
   
-  df[,"M"] <- G[,]%*%effs_x1 + v_m
-  df[,"X1"] <- df[,"M"] + pi*df[,"X2"] + v_x1
+
+  df[,"X1"] <- G[,]%*%effs_x1 + pi*df[,"X2"] + v_x1
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + v_y  
   
 
@@ -80,7 +90,7 @@ GWASres <- function(dat){
     
   }
   
-  allele_frequencies <- colSums(dat[,1:100]) / (2 * nobs)
+  allele_frequencies <- colSums(dat[,1:100]) / (2 * nrow(dat))
   MR_dat$af <- allele_frequencies
   MR_dat$id <- seq.int(nrow(MR_dat))
   MR_dat$EA <- "A"
