@@ -13,7 +13,7 @@ library(truncnorm)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 1
+reps = 2
 
 results = data.frame()
 results_all = NULL
@@ -24,13 +24,13 @@ mvmrres <- NULL
 results_all = data.frame()
 results_ivw = data.frame()
 
-for (mod in c("A","B","C","D"))  {
+for (model in c("A","B","C","D"))  {
 results_rep = data.frame()
   
     for(j in 1:reps){  
         
-          gm <- 0
-          params <- setup(mod)
+          gm <- 0.5
+          params <- setup(model)
           
           snps = params[1]      
           snpsc = params[2]         
@@ -44,7 +44,7 @@ results_rep = data.frame()
             #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
         #### 
         
-          results[1,"model"] <- mod
+          results[1,"model"] <- model
           results[1,"pi"] <- pi
           results[1,"sample.size"] <- nobs
           
@@ -70,7 +70,7 @@ results_rep = data.frame()
       ## format results
         res_run <- rbind(univariate_results, mvmr_res)
         res_run$run <- j
-        res_run$mode <- mod
+        res_run$mode <- model
         
         results_rep <- rbind(results_rep, res_run)  
         
