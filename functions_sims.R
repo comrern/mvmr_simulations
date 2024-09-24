@@ -1,13 +1,31 @@
 
 
 
-gendat <- function(nsnps,snpsc,ss,beta1,beta2,pi){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   
-  af = 0.4 
   n=2*ss
   
-  G  <- matrix(rbinom(n*nsnps, 2, af), n, nsnps)
-  G2 <- matrix(rbinom(n*snpsc, 2, af), n, snpsc)
+  
+  ## debug code ##      n=20000     nsnps=100     snpsc=100      beta1=0    beta2=0.4
+  
+  df <- as.data.frame(matrix(nrow=n))
+  df$V1 <- seq.int(nrow(df))
+  df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
+
+  prob_inc <-  0.2 + 0.4 * df$X2  ## build probability vector based on value of X2 --> 
+                              ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
+  
+  prob_dec <-  0.4 - 0.3 * df$X2
+
+  prob_inc_g <- rep(prob_inc, times = nsnps/3)
+  prob_dec_g <- rep(prob_dec, times = nsnps/3)
+
+  G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, (nsnps/3))
+  G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
+  G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
+  
+  G <- cbind(G_inc, G_dec, G_cont)
+  G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
   
   means <- c(0, 0)                                   
   cov_matrix <- matrix(c(1, 0, 0, 1),
@@ -20,22 +38,18 @@ gendat <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   
   v_x1 <- errors[,1]
   v_y <- errors[,2]
-  v_x2 <- rnorm(n,0,1)
-  v_m <- rnorm(n,0,1)
+
+  effs_x1 <- abs(rnorm(nsnps,0,0.05))
+  effs_x2 <- abs(rnorm(snpsc,0,0.05))
   
-  effs_x1 <- abs(rnorm(nsnps,0,0.06))
-  effs_x2 <- abs(rnorm(snpsc,0,0.06))
-  
-  df <- data.frame(cbind(G, G2))
-  colnames(df) <- gsub("X","G",colnames(df))
-  
-  df[,"X2"] <- G2[,]%*%effs_x2 + v_x2               ## change to obs proportions
-  df[,"M"] <- G[,]%*%effs_x1 + v_m
-  df[,"X1"] <- df[,"M"] + pi*df[,"X2"] + v_x1
+  df <- (cbind(df, G, G2))
+  # colnames(df) <- gsub("V","G",colnames(df))
+
+  df[,"X1"] <- G[,]%*%effs_x1 + pi*df[,"X2"] + v_x1
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + v_y  
   
-  data <- cbind.data.frame(df)
-  return(data)
+  data <- df
+  return(df)
 }
 
 
@@ -67,7 +81,7 @@ GWASres <- function(dat){
     
   }
   
-  allele_frequencies <- colSums(dat[,1:100]) / (2 * nobs)
+  allele_frequencies <- colSums(dat[,3:(snps + snpsc + 2)]) / (2 * nrow(dat))
   MR_dat$af <- allele_frequencies
   MR_dat$id <- seq.int(nrow(MR_dat))
   MR_dat$EA <- "A"
@@ -82,6 +96,7 @@ univariate_MR <- function(MR_dat){
                       beta_col="X1_b",
                       se_col="X1_se",
                       eaf_col="af",
+                      pval_col="X1_p",
                       effect_allele_col = "EA"
   )
   
@@ -90,6 +105,7 @@ univariate_MR <- function(MR_dat){
                       beta_col="X2_b",
                       se_col="X2_se",
                       eaf_col="af",
+                      pval_col="X1_p",
                       effect_allele_col = "EA"
   )
   
@@ -98,14 +114,18 @@ univariate_MR <- function(MR_dat){
                      beta_col="Y_b",
                      se_col="Y_se",
                      eaf_col="af",
+                     pval_col="X1_p",
                      effect_allele_col = "EA"
   )
   
   dat1 <- harmonise_data(exp1, out)
   dat2 <- harmonise_data(exp2, out)
   
-  dat1 <- dat1[dat1$pval.exposure <= 0.00000005,]
-  dat2 <- dat2[dat2$pval.exposure <= 0.00000005,]
+  dat1 <- dat1[dat1$pval.exposure <= 5e-8,]
+  dat2 <- dat2[dat2$pval.exposure <= 5e-8,]
+  
+  if (length(dat1$SNP) == 0 | length(dat2$SNP) == 0) {print("No significant SNPs for exposure(s)")}
+  if (length(dat1$SNP) < 3 | length(dat2$SNP) < 3) {print("Too few SNPs for MR")}
   
   mr1 <- mr(dat1)
   mr2 <- mr(dat2)
