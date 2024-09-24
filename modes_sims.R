@@ -6,7 +6,7 @@ setup <- function(k){
     
     snps = 99       #no of SNPs for X1
     snpsc = 99         #No of SNPs for X2/X3
-    nobs = 10000
+    nobs = 20000
     b1 = 0
     b2 = 0.8
   }
@@ -15,7 +15,7 @@ setup <- function(k){
     
     snps = 99       #no of SNPs for X1
     snpsc = 99         #No of SNPs for X2/X3
-    nobs = 10000
+    nobs = 20000
     b1 = 0.4
     b2 = 0.8
   }
@@ -24,7 +24,7 @@ setup <- function(k){
     
     snps = 99       #no of SNPs for X1
     snpsc = 99         #No of SNPs for X2/X3
-    nobs = 10000
+    nobs = 20000
     b1 = 0
     b2 = 0
   }
@@ -33,7 +33,7 @@ setup <- function(k){
     
     snps = 99       #no of SNPs for X1
     snpsc = 99         #No of SNPs for X2/X3
-    nobs = 10000
+    nobs = 20000
     b1 = 0.4
     b2 = 0
   }

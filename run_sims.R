@@ -29,7 +29,7 @@ results_rep = data.frame()
   
     for(j in 1:reps){  
         
-          gm <- 0.5
+          gm <- 0
           params <- setup(model)
           
           snps = params[1]      
