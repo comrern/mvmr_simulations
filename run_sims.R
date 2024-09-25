@@ -29,9 +29,9 @@ results_rep = data.frame()
   
     for(j in 1:reps){  
         
-          gm <- 0
+          gm <- 0.5
           params <- setup(model)
-          
+          betaC <- 0.4
           snps = params[1]      
           snpsc = params[2]         
           nobs = params[3]
@@ -40,7 +40,7 @@ results_rep = data.frame()
           pi = gm
           
           
-          dat <- data_gen(snps, snpsc, nobs, b1 , b2, pi)
+          dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, pi)
             #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
         #### 
         

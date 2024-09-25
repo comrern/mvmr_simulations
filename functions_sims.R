@@ -1,7 +1,7 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2,pi){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, pi){
   
   n=2*ss
   
@@ -38,15 +38,18 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2,pi){
   
   v_x1 <- errors[,1]
   v_y <- errors[,2]
-
+  v_c <- rnorm(n,0,1)
+  
   effs_x1 <- abs(rnorm(nsnps,0,0.05))
   effs_x2 <- abs(rnorm(snpsc,0,0.05))
   
   df <- (cbind(df, G, G2))
   # colnames(df) <- gsub("V","G",colnames(df))
 
-  df[,"X1"] <- G[,]%*%effs_x1 + pi*df[,"X2"] + v_x1
-  df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + v_y  
+  df[,"C"] <-  betaC*df[,"X2"] + v_c 
+  df[,"X1"] <- G[,]%*%effs_x1 + pi*df[,"C"]  + v_x1
+  df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
+  
   
   data <- df
   return(df)

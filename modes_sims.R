@@ -8,7 +8,7 @@ setup <- function(k){
     snpsc = 99         #No of SNPs for X2/X3
     nobs = 20000
     b1 = 0
-    b2 = 0.8
+    b2 = 0.4
   }
 
   if(k=='B'){    ## b1 and b2 effect, b2 modifies magnitude of ce
@@ -17,7 +17,7 @@ setup <- function(k){
     snpsc = 99         #No of SNPs for X2/X3
     nobs = 20000
     b1 = 0.4
-    b2 = 0.8
+    b2 = 0.4
   }
   
   if(k=='C'){    ## No b1 or b2 effect
