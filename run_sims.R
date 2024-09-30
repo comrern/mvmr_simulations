@@ -13,7 +13,7 @@ library(truncnorm)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 2
+reps = 3
 
 results = data.frame()
 results_all = NULL
@@ -29,18 +29,19 @@ results_rep = data.frame()
   
     for(j in 1:reps){  
         
-          gm <- 0.5
+
           params <- setup(model)
-          betaC <- 0.4
           snps = params[1]      
           snpsc = params[2]         
           nobs = params[3]
           b1 = params[4]
           b2 = params[5]
-          pi = gm
+          betaC=params[6]
+          beta2C=params[7]
+          pi = 0
           
           
-          dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, pi)
+          dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, pi)
             #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
         #### 
         

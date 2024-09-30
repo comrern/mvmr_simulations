@@ -1,7 +1,7 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, pi){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi){
   
   n=2*ss
   
@@ -12,20 +12,20 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, pi){
   df$V1 <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
 
-  prob_inc <-  0.2 + 0.4 * df$X2  ## build probability vector based on value of X2 --> 
-                              ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
+    prob_inc <-  0.2 + 0.4 * df$X2  ## build probability vector based on value of X2 --> 
+                                ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
+    
+    prob_dec <-  0.4 - 0.3 * df$X2
   
-  prob_dec <-  0.4 - 0.3 * df$X2
-
-  prob_inc_g <- rep(prob_inc, times = nsnps/3)
-  prob_dec_g <- rep(prob_dec, times = nsnps/3)
-
-  G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, (nsnps/3))
-  G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
-  G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
+    prob_inc_g <- rep(prob_inc, times = nsnps/3)
+    prob_dec_g <- rep(prob_dec, times = nsnps/3)
   
-  G <- cbind(G_inc, G_dec, G_cont)
-  G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
+    G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, (nsnps/3))
+    G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
+    G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
+    
+    G <- cbind(G_inc, G_dec, G_cont)
+    G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
   
   means <- c(0, 0)                                   
   cov_matrix <- matrix(c(1, 0, 0, 1),
@@ -41,13 +41,12 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, pi){
   v_c <- rnorm(n,0,1)
   
   effs_x1 <- abs(rnorm(nsnps,0,0.05))
-  effs_x2 <- abs(rnorm(snpsc,0,0.05))
-  
+
   df <- (cbind(df, G, G2))
   # colnames(df) <- gsub("V","G",colnames(df))
 
-  df[,"C"] <-  betaC*df[,"X2"] + v_c 
-  df[,"X1"] <- G[,]%*%effs_x1 + pi*df[,"C"]  + v_x1
+  df[,"C"] <-  beta2C*df[,"X2"] + v_c 
+  df[,"X1"] <- G[,]%*%effs_x1  + pi*df[,"X2"] + df[,"C"] + v_x1
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
   
