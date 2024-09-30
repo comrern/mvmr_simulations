@@ -46,7 +46,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi){
   # colnames(df) <- gsub("V","G",colnames(df))
 
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
-  df[,"X1"] <- G[,]%*%effs_x1  + pi*df[,"X2"] + df[,"C"] + v_x1
+  df[,"X1"] <- G[,]%*%effs_x1  +pi*df[,"C"] + v_x1
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
   
@@ -167,6 +167,59 @@ run_mvmr <- function(MR_dat){
   return(res_mvmr)
 }
 
+
+avg_cals <- function(results, b1, b2, beta2C, betaC) {
+  
+  
+  
+  ## test params:
+  results <- results_ivw
+  b1=0.4
+  b2=0.8
+  beta2C=0.4
+  
+  
+  avg_res <- data.frame()
+
+  
+  
+  for (model in c("A","B","C","D") ){
+    row_res <- as.data.frame(matrix(NA, nrow = 4, ncol = 7))
+    colnames(row_res) <- c("model","method","exposure","b","se","p","nsnp")
+    row_res$model <- c(model, model)
+    row_res$method <- c("IVW","IVW","MVMR","MVMR")
+    row_res$exposure <- c(1,2,1,2)
+    
+    row_res$b     <- list(mean(results[results$method == "Inverse variance weighted" & results$exp == 1 & results$mode == model,]$b)
+                  , mean(results[results$method == "Inverse variance weighted" & results$exp == 2 & results$mode == model,]$b)
+                  , mean(results[results$method == "mvmr" & results$exp == 1 & results$mode == model,]$b)
+                  , mean(results[results$method == "mvmr" & results$exp == 2 & results$mode == model,]$b))
+    
+    row_res$se    <- list(mean(results[results$method == "Inverse variance weighted" & results$exp == 1 & results$mode == model,]$se)
+                  , mean(results[results$method == "Inverse variance weighted" & results$exp == 2 & results$mode == model,]$se)
+                  , mean(results[results$method == "mvmr" & results$exp == 1 & results$mode == model,]$se)
+                  , mean(results[results$method == "mvmr" & results$exp == 2 & results$mode == model,]$se))
+    
+    row_res$p     <- list(mean(results[results$method == "Inverse variance weighted" & results$exp == 1 & results$mode == model,]$pval)
+                  , mean(results[results$method == "Inverse variance weighted" & results$exp == 2 & results$mode == model,]$pval)
+                  , mean(results[results$method == "mvmr" & results$exp == 1 & results$mode == model,]$pval)
+                  , mean(results[results$method == "mvmr" & results$exp == 2 & results$mode == model,]$pval))
+    
+    row_res$nsnp   <- list(mean(results[results$method == "Inverse variance weighted" & results$exp == 1 & results$mode == model,]$nsnp)
+                  , mean(results[results$method == "Inverse variance weighted" & results$exp == 2 & results$mode == model,]$nsnp)
+                  , mean(results[results$method == "mvmr" & results$exp == 1 & results$mode == model,]$nsnp)
+                  , mean(results[results$method == "mvmr" & results$exp == 2 & results$mode == model,]$nsnp))
+    
+    
+    avg_res <- rbind(avg_res, row_res)
+    
+    
+    
+    }
+   
+  
+  
+}
 
 
 
