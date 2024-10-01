@@ -13,8 +13,8 @@ library(truncnorm)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 3
-
+reps = 25
+run = 0
 results = data.frame()
 results_all = NULL
 results_ivw = NULL
@@ -29,7 +29,9 @@ results_rep = data.frame()
   
     for(j in 1:reps){  
         
-
+          run <- run + 1  
+          print(paste("on run", run))
+          
           params <- setup(model)
           snps = params[1]      
           snpsc = params[2]         
@@ -82,5 +84,11 @@ results_rep = data.frame()
 }
 results_ivw <- results_all[results_all$method %in% c("Inverse variance weighted","mvmr"),]
     
-   
-    
+results_averaged <- avg_cals(results_ivw,reps)
+results_averaged$b <- as.numeric(results_averaged$b)
+results_averaged$se <- as.numeric(results_averaged$se)
+results_averaged$nsnp <- as.numeric(results_averaged$nsnp)
+results_averaged$p <- as.numeric(results_averaged$p)
+results_averaged$cov_b <- as.numeric(results_averaged$cov_b)
+
+ write.csv(results_averaged, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/results_averaged.csv")
