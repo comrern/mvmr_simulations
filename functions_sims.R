@@ -46,7 +46,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi){
   # colnames(df) <- gsub("V","G",colnames(df))
 
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
-  df[,"X1"] <- G[,]%*%effs_x1  +pi*df[,"C"] + v_x1
+  df[,"X1"] <- G[,]%*%effs_x1 + xi*df["X2"] + pi*df[,"C"] + v_x1
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
   

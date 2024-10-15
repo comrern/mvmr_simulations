@@ -30,7 +30,7 @@ results_rep = data.frame()
     for(j in 1:reps){  
         
           run <- run + 1  
-          print(paste("on run", run))
+          print(paste("on run", run, model))
           
           params <- setup(model)
           snps = params[1]      
@@ -40,7 +40,8 @@ results_rep = data.frame()
           b2 = params[5]
           betaC=params[6]
           beta2C=params[7]
-          pi = 0
+          pi = 0.5
+          xi=0
           
           
           dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, pi)
