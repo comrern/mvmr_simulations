@@ -17,7 +17,7 @@ data$labels <- c("IVW - exposure 1", "MVMR - exposure 1", "MVMR - ancestry","IVW
 ### megaplot ###
 
 
-combined_plot <- ggplot(data, aes(y=(key), x=(or),xmin=(or_lci95), xmax=(or_uci95),color=(model),group=model))
+combined_plot <- ggplot(data, aes(y=(key), x=(or),xmin=(or_lci95), xmax=(or_uci95),group=model))
 
 
 combined_plot + geom_point() +

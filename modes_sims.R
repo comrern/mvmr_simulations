@@ -8,7 +8,7 @@ setup <- function(k){
     snpsc = 99         #No of SNPs for X2/X3
     nobs = 25000
     b1 = 0
-    b2 = 0.4
+    b2 = 0.8
     betaC = 0.6
     beta2C =0.6
   }
@@ -19,7 +19,7 @@ setup <- function(k){
     snpsc = 99         #No of SNPs for X2/X3
     nobs = 25000
     b1 = 0.4
-    b2 = 0.4
+    b2 = 0.8
     betaC = 0.6
     beta2C =0.6
   }

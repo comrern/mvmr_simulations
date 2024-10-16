@@ -13,7 +13,7 @@ library(truncnorm)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 25
+reps = 4
 run = 0
 results = data.frame()
 results_all = NULL
@@ -93,3 +93,7 @@ results_averaged$p <- as.numeric(results_averaged$p)
 results_averaged$cov_b <- as.numeric(results_averaged$cov_b)
 
  write.csv(results_averaged, "./results/results_averaged.csv")
+ 
+ 
+ 
+ 
