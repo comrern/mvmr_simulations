@@ -26,7 +26,7 @@ results_ivw = data.frame()
 
 for (model in c("A","B","C","D"))  {
 results_rep = data.frame()
-  
+run=0
     for(j in 1:reps){  
         
           run <- run + 1  
