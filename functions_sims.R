@@ -27,13 +27,13 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(nsnps,0,0.05))
+  effs_x1 <- abs(rnorm(nsnps,0,0.08))
 
   
   df <- (cbind(df, G, G2))
   # colnames(df) <- gsub("V","G",colnames(df))
 
-  df[,"LD"] <- 1 - df[,"X2"]
+  df[,"LD"] <- 1 - (df[,"X2"])/2
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
   df[,"X1"] <- (G[,]%*%effs_x1)* df[,"LD"]  + pi*df[,"C"] + v_x1
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  

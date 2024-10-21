@@ -1,5 +1,4 @@
 library(ggplot2)
-library(TwoSampleMR)
 
 
 data <- read.csv("./results/results_averaged.csv")
