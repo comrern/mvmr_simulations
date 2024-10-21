@@ -33,9 +33,10 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi){
   df <- (cbind(df, G, G2))
   # colnames(df) <- gsub("V","G",colnames(df))
 
-  df[,"LD"] <- 1 - (df[,"X2"])/2
+  LD <- 0.5 + (df[,"X2"])
+  LD <- ifelse(LD> 1,1 , LD)
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
-  df[,"X1"] <- (G[,]%*%effs_x1)* df[,"LD"]  + pi*df[,"C"] + v_x1
+  df[,"X1"] <- (G[,]%*%effs_x1)* LD + betaC*df[,"C"] + v_x1
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
   
