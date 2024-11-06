@@ -1,7 +1,7 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi){
+data_gen_LD <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   
   n=2*ss
   
@@ -11,7 +11,26 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi){
   df$V1 <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
 
+  if(LD_mod==F){
+    prob_inc <-  0.2 + 0.4 * df$X2  ## build probability vector based on value of X2 --> 
+    ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
+    
+    prob_dec <-  0.4 - 0.3 * df$X2
+    
+    prob_inc_g <- rep(prob_inc, times = nsnps/3)
+    prob_dec_g <- rep(prob_dec, times = nsnps/3)
+    
+    G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, (nsnps/3))
+    G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
+    G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
+    
+    G <- cbind(G_inc, G_dec, G_cont)
+    
+  }
+  
+  if(LD_mod==T){
   G <- matrix(rbinom(n*nsnps, 2, 0.4), n, nsnps)
+  }
   G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
   
   means <- c(0, 0)                                   
@@ -30,35 +49,44 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi){
   effs_x1 <- abs(rnorm(nsnps,0,0.08))
   
   
-
+  df <- (cbind(df, G, G2))
+  df[,"C"] <-  beta2C*df[,"X2"] + v_c 
   
   ### Model LD
-  LD_inc <- 0.5 + (df[,"X2"])
-  LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
+  if(LD_mod==T){
+    LD_inc <- 0.5 + (df[,"X2"])
+    LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
+    
+    LD_dec <- 1 - (df[,"X2"])
+    LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
+    
+    LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
+    LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):(2*(nsnps/3))], function(y_val) LD_dec * y_val)
+    
+    LD_const_mat <- matrix(rep(effs_x1[(2*(nsnps/3)+1):nsnps], each = n), nrow = n, ncol = nsnps/3, byrow = TRUE)
+    
+    effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
+    
+    df[,"X1"] <- rowSums(G[,]*effs_mat) + betaC*df[,"C"] + v_x1
   
-  LD_dec <- 1 - (df[,"X2"])
-  LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
+  }
   
-  LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
-  LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):(2*(nsnps/3))], function(y_val) LD_dec * y_val)
+  if(LD_mod==F){
+    df[,"X1"] <- G[,]*effs_x1 + betaC*df[,"C"] + v_x1
+  }
   
-  LD_const_mat <- matrix(rep(effs_x1[(2*(nsnps/3)+1):nsnps], each = n), nrow = n, ncol = nsnps/3, byrow = TRUE)
-  
-  effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
 
-  
-  df <- (cbind(df, G, G2))
   # colnames(df) <- gsub("V","G",colnames(df))
 
 
-  df[,"C"] <-  beta2C*df[,"X2"] + v_c 
-  df[,"X1"] <- rowSums(G[,]*effs_mat) + betaC*df[,"C"] + v_x1
+
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
   
   data <- df
   return(df)
 }
+
 
 
 GWASres <- function(dat){
@@ -241,7 +269,7 @@ avg_cals <- function(results, reps) {
     avg_res <- rbind(avg_res, row_res)
     }
    
-  
+  ###### TODO--> refactor to account for extra loops
  return(avg_res) 
 }
 
