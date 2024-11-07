@@ -28,6 +28,7 @@ results_ivw = data.frame()
 
 for (setup_mode in c(1,2,3,4)){
   
+  results_models <- data.frame()
   for (model in c("A","B","C","D"))  {
   results_rep = data.frame()
   run=0
@@ -86,8 +87,11 @@ for (setup_mode in c(1,2,3,4)){
       }
     # results_rep$mod <- mod
   
-    results_all <- rbind(results_all, results_rep)  
+    results_models <- rbind(results_models, results_rep)  
   }
+  results_models$setup_mode <- setup_mode
+  results_all <- rbind(results_all, results_models)
+  
 }
 results_ivw <- results_all[results_all$method %in% c("Inverse variance weighted","mvmr"),]
     
@@ -98,7 +102,7 @@ results_averaged$nsnp <- as.numeric(results_averaged$nsnp)
 results_averaged$p <- as.numeric(results_averaged$p)
 results_averaged$cov_b <- as.numeric(results_averaged$cov_b)
 
- # write.csv(results_averaged, "./results/results_averaged.csv")
+write.csv(results_averaged, "./results/results_averaged.csv")
  
  
  

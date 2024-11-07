@@ -25,3 +25,13 @@ combined_plot + geom_point() +
                 geom_vline(xintercept=1) +
                 scale_y_discrete(drop=T, labels=data$labels) +  
                 facet_wrap(~ model, scale= "free_y")
+
+
+
+
+### subplots
+
+
+mode_1
+mode_2
+

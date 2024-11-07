@@ -202,7 +202,7 @@ run_mvmr <- function(MR_dat){
 }
 
 
-avg_cals <- function(results, reps) {
+avg_cals <- function(results, reps, setup_mode) {
   
   
   
@@ -212,10 +212,11 @@ avg_cals <- function(results, reps) {
   
 for (setup_mode in c(1,2,3,4)){
   rep_res <- data.frame()
+  single_model_res <- results[results$setup_mode == setup_mode,]
   
   for (model in c("A","B","C","D") ){
     
-    params <- setup(model)
+    params <- setup(setup_mode, model)
     b1 = params[4]
     b2 = params[5]
     
@@ -226,7 +227,7 @@ for (setup_mode in c(1,2,3,4)){
     row_res$method <- c("IVW","IVW","MVMR","MVMR")
     row_res$exposure <- c(1,2,1,2)
     
-    results_mode <-results[results$mode == model,]
+    results_mode <-single_model_res[single_model_res$mode == model,]
     
     row_res$b     <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1,]$b)
                   , mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$b)
@@ -269,6 +270,9 @@ for (setup_mode in c(1,2,3,4)){
   rep_res$setup_mode <- setup_mode
   avg_res <-rbind(avg_res,rep_res)
 }  
+  
+  
+  
   ###### TODO--> refactor to account for extra loops
  return(avg_res) 
 }
