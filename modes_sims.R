@@ -6,32 +6,28 @@ setup <- function(m,k){
 
     b1 = 0
     b2 = 0.8
-    betaC = 0.6
-    beta2C = 0.6
+
   }
 
   if(k=='B'){    ## b1 and b2 effect, b2 modifies magnitude of ce
 
     b1 = 0.4
     b2 = 0.8
-    betaC = 0.6
-    beta2C =0.6
+
   }
   
   if(k=='C'){    ## No b1 or b2 effect
     
     b1 = 0
     b2 = 0
-    betaC = 0.6
-    beta2C =0.6
+
   }
   
   if(k=='D'){    ## No ancestry effect
     
     b1 = 0.4
     b2 = 0
-    betaC = 0.6
-    beta2C =0.6
+
   }
   
   
@@ -40,5 +36,8 @@ setup <- function(m,k){
   xi = ifelse(m==3, 1, 0)
   snps=33
   nobs = 25000
+  betaC = 0.8
+  beta2C =0.8
+  
   return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, pi, xi, LD_mod))
 }

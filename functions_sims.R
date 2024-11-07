@@ -67,18 +67,13 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
     
     effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
     
-    df[,"X1"] <- rowSums(G[,]*effs_mat) + betaC*df[,"C"] + v_x1
+    df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
   
   }
   
   if(LD_mod==F){
-    df[,"X1"] <- G[,]%*%effs_x1 + betaC*df[,"C"] + v_x1
+    df[,"X1"] <- G[,]%*%effs_x1 + xi*df["X2"] + betaC*df[,"C"] + v_x1
   }
-  
-
-  # colnames(df) <- gsub("V","G",colnames(df))
-
-
 
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
