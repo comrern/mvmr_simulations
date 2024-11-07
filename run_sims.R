@@ -44,11 +44,12 @@ for (setup_mode in c(1,2,3,4)){
             b2 = params[5]
             betaC=params[6]
             beta2C=params[7]
-            pi = 0.5
-            xi=0
+            LD_mod=params[10]
+            pi = params[8]
+            xi=params[9]
             
             
-            dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, pi)
+            dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, pi, LD_mod)
               #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
           #### 
           
@@ -90,7 +91,7 @@ for (setup_mode in c(1,2,3,4)){
 }
 results_ivw <- results_all[results_all$method %in% c("Inverse variance weighted","mvmr"),]
     
-results_averaged <- avg_cals(results_ivw,reps)
+results_averaged <- avg_cals(results_ivw, reps, setup_mode)
 results_averaged$b <- as.numeric(results_averaged$b)
 results_averaged$se <- as.numeric(results_averaged$se)
 results_averaged$nsnp <- as.numeric(results_averaged$nsnp)

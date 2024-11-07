@@ -1,11 +1,11 @@
 
 
 
-data_gen_LD <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   
   n=2*ss
   
-  ## debug code ##      n=20000     nsnps=33     snpsc=33      beta1=0    beta2=0.4   betaC=0.5  beta2C=0.6  pi=0.5
+  ## debug code ##      n=25000     nsnps=33     snpsc=33      beta1=0    beta2=0.4   betaC=0.5  beta2C=0.6  pi=0.5
   
   df <- as.data.frame(matrix(nrow=n))
   df$V1 <- seq.int(nrow(df))
@@ -72,7 +72,7 @@ data_gen_LD <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   }
   
   if(LD_mod==F){
-    df[,"X1"] <- G[,]*effs_x1 + betaC*df[,"C"] + v_x1
+    df[,"X1"] <- G[,]%*%effs_x1 + betaC*df[,"C"] + v_x1
   }
   
 
@@ -209,8 +209,9 @@ avg_cals <- function(results, reps) {
   ## test params:
   results <- results_ivw
   avg_res <- data.frame()
-
   
+for (setup_mode in c(1,2,3,4)){
+  rep_res <- data.frame()
   
   for (model in c("A","B","C","D") ){
     
@@ -248,9 +249,6 @@ avg_cals <- function(results, reps) {
                   , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$nsnp))
     
     
-
-    
-    
   ## calculate coverage
     
     results_mode <- cbind.data.frame(results_mode, (results_mode$b - (1.96 * results_mode$se)),((results_mode$b + (1.96 * results_mode$se)))) 
@@ -266,9 +264,11 @@ avg_cals <- function(results, reps) {
     
     
     
-    avg_res <- rbind(avg_res, row_res)
-    }
-   
+    rep_res <- rbind(rep_res, row_res)
+  }
+  rep_res$setup_mode <- setup_mode
+  avg_res <-rbind(avg_res,rep_res)
+}  
   ###### TODO--> refactor to account for extra loops
  return(avg_res) 
 }
