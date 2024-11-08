@@ -35,7 +35,7 @@ for (setup_mode in c(1,2,3,4)){
       for(j in 1:reps){  
           
             run <- run + 1  
-            print(paste("on run", run, model))
+            print(paste("on run", run, model, "and mode", setup_mode))
             
             params <- setup(setup_mode, model)
             snps = params[1]      
