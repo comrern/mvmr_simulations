@@ -10,21 +10,21 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   df <- as.data.frame(matrix(nrow=n))
   df$V1 <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
-
-    prob_inc <-  0.2 + 0.4 * df$X2  ## build probability vector based on value of X2 --> 
-    ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
+  df <- df[order(df$X2), ]
+  
+  obs_af <- read.table("C:/Users/kb22541/Desktop/Analyses/simulation/ld_reports/af_subset", header=T)
+  
+  # rep allele freqs to feed into binom 
+  G <- data.frame(matrix(NA, nrow = nsnps, ncol = n))
+  
+  for (snp in 1:nrow(obs_af)){
     
-    prob_dec <-  0.4 - 0.3 * df$X2
-    prob_inc_g <- rep(prob_inc, times = 10)
-    prob_dec_g <- rep(prob_dec, times = 10)
+    snp_af <- unlist(rep((obs_af[snp,]), each=(n/4)))
+    G[snp, ] <- rbinom(n, 2, (snp_af))
     
-    G_inc <-  matrix(rbinom(n*(10), 2, prob_inc), n, (10))
-    G_dec <-  matrix(rbinom(n*(10), 2, prob_dec), n, (10))
-    G_cont <-  matrix(rbinom(n*(8), 2, 0.4), n, (8))
-    
-    G <- cbind(G_inc, G_dec, G_cont)
-    
-
+  }
+  
+  G <- as.data.frame(t(G))
   G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
   
   means <- c(0, 0)                                   
