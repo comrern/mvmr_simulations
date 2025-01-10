@@ -26,10 +26,10 @@ df2 <- df[(nrow(df)/4):(nrow(df)/2),]
 df3 <- df[(nrow(df)/2):(nrow(df)- (nrow(df)/4)),]
 df4 <- df[(nrow(df)- (nrow(df)/4)):nrow(df),]
 
-af1 <- as.data.frame(colSums(df1[,3:60]) / (2 * nrow(df1)))
-af2 <- as.data.frame(colSums(df2[,3:60]) / (2 * nrow(df2)))
-af3 <- as.data.frame(colSums(df3[,3:60]) / (2 * nrow(df3)))
-af4 <- as.data.frame(colSums(df4[,3:60]) / (2 * nrow(df4)))
+af1 <- as.data.frame(colSums(df1[,3:31]) / (2 * nrow(df1)))
+af2 <- as.data.frame(colSums(df2[,3:31]) / (2 * nrow(df2)))
+af3 <- as.data.frame(colSums(df3[,3:31]) / (2 * nrow(df3)))
+af4 <- as.data.frame(colSums(df4[,3:31]) / (2 * nrow(df4)))
 
 af1$subgroup <- "p1"
 af2$subgroup <- "p2"

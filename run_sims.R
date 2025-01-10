@@ -15,7 +15,7 @@ library(ggplot2)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 2
+reps = 4
 run = 0
 results = data.frame()
 results_all = NULL
@@ -23,17 +23,16 @@ results_ivw = NULL
 results_out = NULL
 mvmrres <- NULL
 
-results_all = data.frame()
 results_ivw = data.frame()
 
-for (setup_mode in c(1,2,3,4)){
-  
+
   results_models <- data.frame()
   for (model in c("A","B","C","D"))  {
   results_rep = data.frame()
   run=0
       for(j in 1:reps){  
-          
+            
+            setup_mode=1
             run <- run + 1  
             print(paste("on run", run, model, "and mode", setup_mode))
             
@@ -89,20 +88,14 @@ for (setup_mode in c(1,2,3,4)){
   
     results_models <- rbind(results_models, results_rep)  
   }
-  results_models$setup_mode <- setup_mode
-  results_all <- rbind(results_all, results_models)
   
-}
-results_ivw <- results_all[results_all$method %in% c("Inverse variance weighted","mvmr"),]
+
+results_ivw <- results_models[results_models$method %in% c("Inverse variance weighted","mvmr"),]
     
 results_averaged <- avg_cals(results_ivw, reps, setup_mode)
-results_averaged$b <- as.numeric(results_averaged$b)
-results_averaged$se <- as.numeric(results_averaged$se)
-results_averaged$nsnp <- as.numeric(results_averaged$nsnp)
-results_averaged$p <- as.numeric(results_averaged$p)
-results_averaged$cov_b <- as.numeric(results_averaged$cov_b)
 
-write.csv(results_averaged, "./results/results_averaged.csv")
+
+# write.csv(results_averaged, "./results/results_averaged.csv")
  
  
  

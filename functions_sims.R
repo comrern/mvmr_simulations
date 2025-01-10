@@ -40,7 +40,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(28,0,0.08))
+  effs_x1 <- abs(rnorm(28,0,0.5))
   
   
   df <- (cbind(df, G, G2))
@@ -144,13 +144,20 @@ univariate_MR <- function(MR_dat){
   dat1 <- harmonise_data(exp1, out)
   dat2 <- harmonise_data(exp2, out)
   
-  dat1 <- dat1[dat1$pval.exposure <= 5e-8,]
+  dat1_temp <- dat1[dat1$pval.exposure <= 5e-8,]
   dat2 <- dat2[dat2$pval.exposure <= 5e-8,]
   
-  if (length(dat1$SNP) == 0 | length(dat2$SNP) == 0) {print("No significant SNPs for exposure(s)")}
-  if (length(dat1$SNP) < 3 | length(dat2$SNP) < 3) {print("Too few SNPs for MR")}
+  if (length(dat1_temp$SNP) == 0 | length(dat2$SNP) == 0) {
+    print("No significant SNPs for exposure(s), reducing significance threshold")
+    dat1_temp  <- dat1[dat1$pval.exposure <= 5e-7,]
+    }
+  if ((length(dat1_temp$SNP) < 3 | length(dat2$SNP) < 3) & (length(dat1_temp$SNP) == 0 | length(dat2$SNP))) {
+    print("Too few SNPs for MR, reducing significance threshold")
+    dat1_temp  <- dat1[dat1$pval.exposure <= 5e-7,]
+    
+    }
   
-  mr1 <- mr(dat1)
+  mr1 <- mr(dat1_temp)
   mr2 <- mr(dat2)
   
   mr1$exp <- 1
@@ -195,11 +202,11 @@ avg_cals <- function(results, reps, setup_mode) {
   
   ## test params:
   results <- results_ivw
+  
   avg_res <- data.frame()
   
-for (setup_mode in c(1,2,3,4)){
   rep_res <- data.frame()
-  single_model_res <- results[results$setup_mode == setup_mode,]
+  single_model_res <- results
   
   for (model in c("A","B","C","D") ){
     
@@ -254,14 +261,18 @@ for (setup_mode in c(1,2,3,4)){
     
     rep_res <- rbind(rep_res, row_res)
   }
-  rep_res$setup_mode <- setup_mode
-  avg_res <-rbind(avg_res,rep_res)
-}  
+
+
+  rep_res$b <- as.numeric(rep_res$b)
+  rep_res$se <- as.numeric(rep_res$se)
+  rep_res$nsnp <- as.numeric(rep_res$nsnp)
+  rep_res$p <- as.numeric(rep_res$p)
+  rep_res$cov_b <- as.numeric(rep_res$cov_b)
   
-  
+  rep_res$cov_pct <- (rep_res$cov_b / reps) * 100
   
   ###### TODO--> refactor to account for extra loops
- return(avg_res) 
+ return(rep_res) 
 }
 
 
