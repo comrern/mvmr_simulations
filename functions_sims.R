@@ -202,7 +202,7 @@ avg_cals <- function(results, reps, setup_mode) {
   
   
   ## test params:
-  results <- results_ivw
+  # results <- results_ivw
   avg_res <- data.frame()
   
 for (setup_mode in c(1,2,3,4)){
@@ -248,17 +248,32 @@ for (setup_mode in c(1,2,3,4)){
   ## calculate coverage
     
     results_mode <- cbind.data.frame(results_mode, (results_mode$b - (1.96 * results_mode$se)),((results_mode$b + (1.96 * results_mode$se)))) 
-    names(results_mode)[9:10] <- c("lci","uci")
+    names(results_mode)[10:11] <- c("lci","uci")
     
     b1_v <- rep(b1, time=reps)
     b2_v <- rep(b2, time=reps)
     
-    row_res$cov_b <- list(sum(between(b1_v, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$uci))
-                    , sum(between(b2_v, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$uci))
-                    , sum(between(b1_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$uci))
-                    ,  sum(between(b2_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$uci)))
+    # row_res$cov_b <- list(sum(between(b1_v, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$uci))
+    #                 , sum(between(b2_v, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$uci))
+    #                 , sum(between(b1_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$uci))
+    #                 ,  sum(between(b2_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$uci)))
+    # 
     
+    # Extract filtered results
+    ivw_exp1 <- results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1, ]
+    ivw_exp2 <- results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2, ]
+    mvmr_exp1 <- results_mode[results_mode$method == "mvmr" & results_mode$exp == 1, ]
+    mvmr_exp2 <- results_mode[results_mode$method == "mvmr" & results_mode$exp == 2, ]
     
+    # Apply sum(between(...)) for each case using mapply() to handle vectorized inputs correctly
+    row_res$cov_b <- c(
+      sum(mapply(between, b1_v, ivw_exp1$lci, ivw_exp1$uci)),
+      sum(mapply(between, b2_v, ivw_exp2$lci, ivw_exp2$uci)),
+      sum(mapply(between, b1_v, mvmr_exp1$lci, mvmr_exp1$uci)),
+      sum(mapply(between, b2_v, mvmr_exp2$lci, mvmr_exp2$uci))
+    )
+    
+    row_res$cov_pct <- (row_res$cov_b / reps) *100
     
     rep_res <- rbind(rep_res, row_res)
   }

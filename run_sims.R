@@ -1,6 +1,7 @@
 set.seed(1234)
 
 setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/")
+output_path <- "./results"
 
 
 library(dplyr)
@@ -92,6 +93,8 @@ for (setup_mode in c(1,2,3,4)){
   results_models$setup_mode <- setup_mode
   results_all <- rbind(results_all, results_models)
   
+  
+
 }
 results_ivw <- results_all[results_all$method %in% c("Inverse variance weighted","mvmr"),]
     
@@ -102,7 +105,12 @@ results_averaged$nsnp <- as.numeric(results_averaged$nsnp)
 results_averaged$p <- as.numeric(results_averaged$p)
 results_averaged$cov_b <- as.numeric(results_averaged$cov_b)
 
-write.csv(results_averaged, "./results/results_averaged_ld_mod.csv")
+
+## save individual outputs for troubleshooting
+write.csv(results_all, paste0(output_path,"/results_full.csv"))
+
+
+write.csv(results_averaged, paste0(output_path, "/results_averaged_ld_mod.csv"))
  
  
  
