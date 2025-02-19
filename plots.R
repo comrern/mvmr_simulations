@@ -1,7 +1,7 @@
 library(ggplot2)
 library(TwoSampleMR)
 
-data <- read.csv("./results/results_averaged.csv")
+data <- read.csv("./results/results_averaged_ld_mod.csv")
 data <- generate_odds_ratios(data)
 
 data <- data[!(data$method== "IVW" & data$exposure==2),]

@@ -102,7 +102,7 @@ results_averaged$nsnp <- as.numeric(results_averaged$nsnp)
 results_averaged$p <- as.numeric(results_averaged$p)
 results_averaged$cov_b <- as.numeric(results_averaged$cov_b)
 
-write.csv(results_averaged, "./results/results_averaged.csv")
+write.csv(results_averaged, "./results/results_averaged_ld_mod.csv")
  
  
  
