@@ -1,22 +1,22 @@
 set.seed(1234)
 
-setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/")
+setwd("/user/work/kb22541/simulations")
 output_path <- "./results"
+.libPaths("/user/work/kb22541/rlib")
+
 
 
 library(dplyr)
-library(tidyverse)
 library(MASS)
 library(TwoSampleMR)
 library(MVMR)
 library(truncnorm)
-library(ggplot2)
-
+library(tidyverse)
 
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 2
+reps = 1
 run = 0
 results = data.frame()
 results_all = NULL
