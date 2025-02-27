@@ -1,4 +1,9 @@
-set.seed(1234)
+
+args <- as.numeric(commandArgs(T))
+set.seed((args[1]*100000))
+job_id <- ((args[1]))
+message("job number ", job_id)
+
 
 setwd("/user/work/kb22541/simulations")
 output_path <- "./results"
@@ -109,6 +114,8 @@ results_averaged$cov_b <- as.numeric(results_averaged$cov_b)
 ## save individual outputs for troubleshooting
 write.csv(results_all, paste0(output_path,"/results_full.csv"))
 
+save(results_all, file=sprintf("rmvmr_sims_%s.Rda", job_id))
+save(results_averaged, file=sprintf(paste0(output_path, "/results_averaged_ld_mod.csv"), job_id))
 
 write.csv(results_averaged, paste0(output_path, "/results_averaged_ld_mod.csv"))
  
