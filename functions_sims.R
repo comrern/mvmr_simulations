@@ -253,11 +253,6 @@ avg_cals <- function(results, reps, setup_mode) {
       b1_v <- rep(b1, time=reps)
       b2_v <- rep(b2, time=reps)
       
-      # row_res$cov_b <- list(sum(between(b1_v, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$uci))
-      #                 , sum(between(b2_v, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$uci))
-      #                 , sum(between(b1_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$uci))
-      #                 ,  sum(between(b2_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$uci)))
-      # 
       
       # Extract filtered results
       ivw_exp1 <- results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1, ]

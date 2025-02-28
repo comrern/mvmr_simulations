@@ -21,7 +21,7 @@ library(tidyverse)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 1
+reps = 2
 run = 0
 results = data.frame()
 results_all = NULL
@@ -63,16 +63,7 @@ for (setup_mode in c(1,2,3,4)){
             results[1,"model"] <- model
             results[1,"pi"] <- pi
             results[1,"sample.size"] <- nobs
-            
-          ####Regression check######
-          
-            ols <- summary(lm(Y ~ X1, data = dat))
-            
-            results[1,"ols_b"] <- ols$coefficients["X1","Estimate"]
-            results[1,"ols_se"] <- ols$coefficients["X1","Std. Error"]
-            
-          ## allele freq
-          
+
             MR_dat <- GWASres(dat)
           
           #### Univariate two sample MR ####
@@ -101,24 +92,12 @@ for (setup_mode in c(1,2,3,4)){
   
 
 }
-results_ivw <- results_all[results_all$method %in% c("Inverse variance weighted","mvmr"),]
-    
-results_averaged <- avg_cals(results_ivw, reps, setup_mode)
-results_averaged$b <- as.numeric(results_averaged$b)
-results_averaged$se <- as.numeric(results_averaged$se)
-results_averaged$nsnp <- as.numeric(results_averaged$nsnp)
-results_averaged$p <- as.numeric(results_averaged$p)
-results_averaged$cov_b <- as.numeric(results_averaged$cov_b)
-
 
 ## save individual outputs for troubleshooting
-write.csv(results_all, paste0(output_path,"/results_full.csv"))
 
-save(results_all, file=sprintf("rmvmr_sims_%s.Rda", job_id))
-save(results_averaged, file=sprintf(paste0(output_path, "/results_averaged_ld_mod.csv"), job_id))
+save(results_all, file=sprintf(paste0(output_path, "/results_%s.csv"), job_id))
 
-write.csv(results_averaged, paste0(output_path, "/results_averaged_ld_mod.csv"))
- 
+
  
  
  
