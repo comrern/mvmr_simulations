@@ -155,18 +155,19 @@ univariate_MR <- function(MR_dat){
   dat1 <- dat1[dat1$pval.exposure <= 5e-8,]
   dat2 <- dat2[dat2$pval.exposure <= 5e-8,]
   
-  if (length(dat1$SNP) == 0 | length(dat2$SNP) == 0) {print("No significant SNPs for exposure(s)")}
-  if (length(dat1$SNP) < 3 | length(dat2$SNP) < 3) {print("Too few SNPs for MR")}
+  f_1 <- mean((dat1$beta.exposure^2)/ (dat1$se.exposure^2))
+  f_2 <- mean((dat2$beta.exposure^2)/ (dat2$se.exposure^2))
   
   mr1 <- mr(dat1)
-  mr2 <- mr(dat2)
+  
+  mr2 <- mr1
   
   mr1$exp <- 1
   mr2$exp <- 2
   
   univ_results <- rbind(mr1, mr2)
   univ_results <- univ_results[,5:10]
-  
+  univ_results$F_stat <- c(f_1,f_2)
   return(univ_results)
 }
 
@@ -181,16 +182,14 @@ run_mvmr <- function(MR_dat){
     RSID=MR_dat$id
   )
   
-  dat_IS <- strength_mvmr(r_input= dat_formatted, gencov = 0)
-  
+  strength <- strength_mvmr(dat_formatted)
   res_mvmr <- as.data.frame(ivw_mvmr(dat_formatted))
   res_mvmr$method <- "mvmr"
   res_mvmr$exposure <- c(1,2)
   res_mvmr$nsnp <- c(50, 50)                                ## fix properly ##
   res_mvmr <- res_mvmr[,c(5,7,1,2,4,6)]
   colnames(res_mvmr) <- c("method","nsnp","b","se","pval","exp")
-  
-  pres <- pleiotropy_mvmr(r_input = dat_formatted, gencov = 0)
+  res_mvmr$F_stat <- c(strength$exposure1, strength$exposure2)
   
   
   return(res_mvmr)
@@ -224,31 +223,32 @@ avg_cals <- function(results, reps, setup_mode) {
       
       results_mode <-single_model_res[single_model_res$mode == model,]
       
-      row_res$b     <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1,]$b)
-                            , mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$b)
-                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b)
-                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b))
+      # Define the methods and exposures of interest
+      methods <- c("Inverse variance weighted", "mvmr")
+      exposures <- c(1, 2)
       
-      row_res$se    <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$se)
-                            , mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$se)
-                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$se)
-                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$se))
+      # Compute means efficiently
+      summary_stats <- results_mode %>%
+        filter(method %in% methods, exp %in% exposures) %>%
+        group_by(method, exp) %>%
+        summarize(
+          b = mean(b, na.rm = TRUE),
+          se = mean(se, na.rm = TRUE),
+          pval = mean(pval, na.rm = TRUE),
+          nsnp = mean(nsnp, na.rm = TRUE),
+          .groups = "drop"
+        )
       
-      row_res$p     <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$pval)
-                            , mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$pval)
-                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$pval)
-                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$pval))
-      
-      row_res$nsnp   <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$nsnp)
-                             , mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$nsnp)
-                             , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$nsnp)
-                             , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$nsnp))
-      
+      # Convert to a list format
+      row_res$b <- summary_stats$b
+      row_res$se <- summary_stats$se
+      row_res$p <- summary_stats$pval
+      row_res$nsnp <- summary_stats$nsnp
       
       ## calculate coverage
       
       results_mode <- cbind.data.frame(results_mode, (results_mode$b - (1.96 * results_mode$se)),((results_mode$b + (1.96 * results_mode$se)))) 
-      names(results_mode)[10:11] <- c("lci","uci")
+      names(results_mode)[9:10] <- c("lci","uci")
       
       b1_v <- rep(b1, time=reps)
       b2_v <- rep(b2, time=reps)

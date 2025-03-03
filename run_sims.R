@@ -21,8 +21,7 @@ library(tidyverse)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 2
-run = 0
+reps = 1000
 results = data.frame()
 results_all = NULL
 results_ivw = NULL
@@ -40,9 +39,6 @@ for (setup_mode in c(1,2,3,4)){
   run=0
       for(j in 1:reps){  
           
-            run <- run + 1  
-            print(paste("on run", run, model, "and mode", setup_mode))
-            
             params <- setup(setup_mode, model)
             snps = params[1]      
             snpsc = params[2]         
@@ -76,7 +72,6 @@ for (setup_mode in c(1,2,3,4)){
             
         ## format results
           res_run <- rbind(univariate_results, mvmr_res)
-          res_run$run <- j
           res_run$mode <- model
           
           results_rep <- rbind(results_rep, res_run)  
