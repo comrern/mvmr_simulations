@@ -1,19 +1,25 @@
-set.seed(1234)
+args <- as.numeric(commandArgs(T))
+set.seed((args[1]*100000))
+job_id <- ((args[1]))
+message("job number ", job_id)
 
-setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/")
+
+setwd("/user/work/kb22541/simulations/real_data_sims")
+output_path <- "./results/real_data_sims"
+.libPaths("/user/work/kb22541/rlib")
+
 
 
 library(dplyr)
-library(tidyverse)
 library(MASS)
 library(TwoSampleMR)
 library(MVMR)
 library(truncnorm)
-library(ggplot2)
-
+library(tidyverse)
 
 source('modes_sims.R')
 source('functions_sims.R')
+
 
 reps = 4
 run = 0
@@ -90,12 +96,10 @@ results_ivw = data.frame()
   }
   
 
-results_ivw <- results_models[results_models$method %in% c("Inverse variance weighted","mvmr"),]
-    
-results_averaged <- avg_cals(results_ivw, reps, setup_mode)
+save(results_models, file=sprintf(paste0(output_path, "/results_%s.csv"), job_id))
 
 
-# write.csv(results_averaged, "./results/results_averaged.csv")
+# write.csv(results_averaged, "./results//results_averaged.csv")
  
  
  

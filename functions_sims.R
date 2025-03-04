@@ -12,7 +12,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   df <- df[order(df$X2), ]
   
-  obs_af <- read.table("C:/Users/kb22541/Desktop/Analyses/simulation/ld_reports/af_subset", header=T)
+  obs_af <- read.table("./af_subset", header=T)
   
   # rep allele freqs to feed into binom 
   G <- data.frame(matrix(NA, nrow = nsnps, ncol = n))
@@ -49,7 +49,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   ### Model LD
 
   ## read observed LD variance 
-  obs_ld_dat <- read.table("C:/Users/kb22541/Desktop/Analyses/simulation/ld_reports/random_subset_matrix", header=T)
+  obs_ld_dat <- read.table("./random_subset_matrix", header=T)
   
   effs_ld_1 <- effs_x1 * obs_ld_dat$R2_p1
   effs_ld_2 <- effs_x1 * obs_ld_dat$R2_p2
@@ -158,13 +158,10 @@ univariate_MR <- function(MR_dat){
     }
   
   mr1 <- mr(dat1_temp)
-  mr2 <- mr(dat2)
-  
+
   mr1$exp <- 1
-  mr2$exp <- 2
-  
-  univ_results <- rbind(mr1, mr2)
-  univ_results <- univ_results[,5:10]
+
+  univ_results <- mr1[,5:10]
   
   return(univ_results)
 }
@@ -193,86 +190,6 @@ run_mvmr <- function(MR_dat){
   
   
   return(res_mvmr)
-}
-
-
-avg_cals <- function(results, reps, setup_mode) {
-  
-  
-  
-  ## test params:
-  results <- results_ivw
-  
-  avg_res <- data.frame()
-  
-  rep_res <- data.frame()
-  single_model_res <- results
-  
-  for (model in c("A","B","C","D") ){
-    
-    params <- setup(setup_mode, model)
-    b1 = params[4]
-    b2 = params[5]
-    
-    
-    row_res <- as.data.frame(matrix(NA, nrow = 4, ncol = 8))
-    colnames(row_res) <- c("model","method","exposure","b","se","p","nsnp","cov_b")
-    row_res$model <- c(model, model)
-    row_res$method <- c("IVW","IVW","MVMR","MVMR")
-    row_res$exposure <- c(1,2,1,2)
-    
-    results_mode <-single_model_res[single_model_res$mode == model,]
-    
-    row_res$b     <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1,]$b)
-                  , mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$b)
-                  , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b)
-                  , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b))
-    
-    row_res$se    <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$se)
-                  , mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$se)
-                  , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$se)
-                  , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$se))
-    
-    row_res$p     <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$pval)
-                  , mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$pval)
-                  , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$pval)
-                  , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$pval))
-    
-    row_res$nsnp   <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$nsnp)
-                  , mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$nsnp)
-                  , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$nsnp)
-                  , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$nsnp))
-    
-    
-  ## calculate coverage
-    
-    results_mode <- cbind.data.frame(results_mode, (results_mode$b - (1.96 * results_mode$se)),((results_mode$b + (1.96 * results_mode$se)))) 
-    names(results_mode)[9:10] <- c("lci","uci")
-    
-    b1_v <- rep(b1, time=reps)
-    b2_v <- rep(b2, time=reps)
-    
-    row_res$cov_b <- list(sum(between(b1_v, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$uci))
-                    , sum(between(b2_v, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2 ,]$uci))
-                    , sum(between(b1_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$uci))
-                    ,  sum(between(b2_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$uci)))
-    
-    
-    
-    rep_res <- rbind(rep_res, row_res)
-  }
-
-
-  rep_res$b <- as.numeric(rep_res$b)
-  rep_res$se <- as.numeric(rep_res$se)
-  rep_res$nsnp <- as.numeric(rep_res$nsnp)
-  rep_res$p <- as.numeric(rep_res$p)
-  rep_res$cov_b <- as.numeric(rep_res$cov_b)
-  
-  rep_res$cov_pct <- (rep_res$cov_b / reps) * 100
-  
-  ###### TODO--> refactor to account for extra loops
- return(rep_res) 
 }
 
 
