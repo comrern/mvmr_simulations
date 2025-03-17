@@ -40,7 +40,7 @@ data$labels <- c("IVW - exposure 1", "MVMR - exposure 1", "MVMR - ancestry","IVW
           geom_vline(xintercept=1) +
           scale_y_discrete(drop=T, labels=data$labels) +  
           facet_wrap(~ model, scale= "free_y") +
-          ggtitle(paste0("Setup mode"), model))
+          ggtitle(paste("Setup mode", model)))
   
   
 
