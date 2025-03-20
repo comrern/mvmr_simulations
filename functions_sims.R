@@ -11,7 +11,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   df$V1 <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
-  if(LD_mod==F){
+  if(AF_mod==F){
     prob_inc <-  0.2 + 0.4 * df$X2  ## build probability vector based on value of X2 --> 
     ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
     
@@ -28,9 +28,9 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
     
   }
   
-  if(LD_mod==T){
-    G <- matrix(rbinom(n*nsnps, 2, 0.4), n, nsnps)
-  }
+
+  G <- matrix(rbinom(n*nsnps, 2, 0.4), n, nsnps)
+  
   G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
   
   means <- c(0, 0)                                   
@@ -53,7 +53,6 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
   
   ### Model LD
-  if(LD_mod==T){
     LD_inc <- 0.5 + (df[,"X2"])
     LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
     
@@ -67,13 +66,9 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
     
     effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
     
-    df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
+  df[,"X1_ss"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
     
-  }
-  
-  if(LD_mod==F){
-    df[,"X1"] <- G[,]%*%effs_x1 + xi*df["X2"] + betaC*df[,"C"] + v_x1
-  }
+  df[,"X1"] <- G[,]%*%effs_x1 + xi*df["X2"] + betaC*df[,"C"] + v_x1
   
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
@@ -93,7 +88,7 @@ GWASres <- function(dat){
   est.snps <- snps + snpsc
   
   for(i in 1:est.snps){
-    a <- summary(lm(dat.1$X1~dat.1[,i]))
+    a <- summary(lm(dat.1$X1_ss~dat.1[,i]))
     MR_dat[i,"X1_b"] <- a$coefficient[2,1]
     MR_dat[i,"X1_se"] <- a$coefficient[2,2]
     MR_dat[i,"X1_p"] <- a$coefficient[2,4]
@@ -196,91 +191,6 @@ run_mvmr <- function(MR_dat){
 }
 
 
-avg_cals <- function(results, reps, setup_mode) {
-  
-  
-  
-  ## test params:
-  # results <- results_ivw
-  avg_res <- data.frame()
-  
-  for (setup_mode in c(1,2,3,4)){
-    rep_res <- data.frame()
-    single_model_res <- results[results$setup_mode == setup_mode,]
-    
-    for (model in c("A","B","C","D") ){
-      
-      params <- setup(setup_mode, model)
-      b1 = params[4]
-      b2 = params[5]
-      
-      
-      row_res <- as.data.frame(matrix(NA, nrow = 4, ncol = 8))
-      colnames(row_res) <- c("model","method","exposure","b","se","p","nsnp","cov_b")
-      row_res$model <- c(model, model)
-      row_res$method <- c("IVW","IVW","MVMR","MVMR")
-      row_res$exposure <- c(1,2,1,2)
-      
-      results_mode <-single_model_res[single_model_res$mode == model,]
-      
-      # Define the methods and exposures of interest
-      methods <- c("Inverse variance weighted", "mvmr")
-      exposures <- c(1, 2)
-      
-      # Compute means efficiently
-      summary_stats <- results_mode %>%
-        filter(method %in% methods, exp %in% exposures) %>%
-        group_by(method, exp) %>%
-        summarize(
-          b = mean(b, na.rm = TRUE),
-          se = mean(se, na.rm = TRUE),
-          pval = mean(pval, na.rm = TRUE),
-          nsnp = mean(nsnp, na.rm = TRUE),
-          .groups = "drop"
-        )
-      
-      # Convert to a list format
-      row_res$b <- summary_stats$b
-      row_res$se <- summary_stats$se
-      row_res$p <- summary_stats$pval
-      row_res$nsnp <- summary_stats$nsnp
-      
-      ## calculate coverage
-      
-      results_mode <- cbind.data.frame(results_mode, (results_mode$b - (1.96 * results_mode$se)),((results_mode$b + (1.96 * results_mode$se)))) 
-      names(results_mode)[9:10] <- c("lci","uci")
-      
-      b1_v <- rep(b1, time=reps)
-      b2_v <- rep(b2, time=reps)
-      
-      
-      # Extract filtered results
-      ivw_exp1 <- results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1, ]
-      ivw_exp2 <- results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2, ]
-      mvmr_exp1 <- results_mode[results_mode$method == "mvmr" & results_mode$exp == 1, ]
-      mvmr_exp2 <- results_mode[results_mode$method == "mvmr" & results_mode$exp == 2, ]
-      
-      # Apply sum(between(...)) for each case using mapply() to handle vectorized inputs correctly
-      row_res$cov_b <- c(
-        sum(mapply(between, b1_v, ivw_exp1$lci, ivw_exp1$uci)),
-        sum(mapply(between, b2_v, ivw_exp2$lci, ivw_exp2$uci)),
-        sum(mapply(between, b1_v, mvmr_exp1$lci, mvmr_exp1$uci)),
-        sum(mapply(between, b2_v, mvmr_exp2$lci, mvmr_exp2$uci))
-      )
-      
-      row_res$cov_pct <- (row_res$cov_b / reps) *100
-      
-      rep_res <- rbind(rep_res, row_res)
-    }
-    rep_res$setup_mode <- setup_mode
-    avg_res <-rbind(avg_res,rep_res)
-  }  
-  
-  
-  
-  ###### TODO--> refactor to account for extra loops
-  return(avg_res) 
-}
 
 
 
