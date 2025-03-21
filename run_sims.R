@@ -21,7 +21,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 1000
+reps = 10
 run = 0
 results = data.frame()
 results_all = NULL
@@ -81,7 +81,7 @@ for (model in c("A","B","C","D"))  {
     
     ### MVMR
     
-    mvmr_res <- run_mvmr(MR_dat)
+    mvmr_res <- run_mvmr(MR_dat, dat)
     
     ## format results
     res_run <- rbind(univariate_results, mvmr_res)
@@ -97,7 +97,7 @@ for (model in c("A","B","C","D"))  {
 }
 
 
-save(results_models, file=sprintf(paste0(output_path, "/results_%s.rda"), job_id))
+# save(results_models, file=sprintf(paste0(output_path, "/results_%s.rda"), job_id))
 
 
 # write.csv(results_averaged, "./results//results_averaged.csv")

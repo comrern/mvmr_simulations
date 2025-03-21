@@ -1,13 +1,15 @@
 rep_res <- data.frame()
 avg_res <- data.frame()
 
-source('../../modes_sims.R')
-source('../../functions_sims.R')
+# source('../../modes_sims.R')
+# source('../../functions_sims.R')
 
 # testing
-results <- read.table("./results_ld_5.csv")
+results <- read.table("./results/ld_run5//results_ld_5.csv")
 
-reps= 10000
+# results <- results_models
+
+reps= 10
 for (model in c("A","B","C","D") ){
   
   params <- setup("1", model)
@@ -49,11 +51,14 @@ for (model in c("A","B","C","D") ){
                         ,  sum(between(b2_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$uci)))
   
   
-  
-  
   row_res$bias   <- list(mean(abs(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v))
                          , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_vmvmr))
                          , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v)))
+  
+  
+  row_res$MSE   <- list(mean((results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v)^2)
+                         , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_vmvmr)^2)
+                         , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v)^2))
   
   
   rep_res <- rbind(rep_res, row_res)
@@ -66,5 +71,5 @@ avg_res <- avg_res %>%
   mutate(across(c(b, se, cov_b, sig, bias), as.numeric))  # Replace with actual column names
 
 avg_res$cov_p <- (avg_res$cov_b/ reps)*100
-
-write.table(avg_res, "./results_averaged_ld_exp.csv", row.names=F)
+avg_res$MSE2 <- (avg_res$se^2) + (avg_res$bias^2)
+# write.table(avg_res, "./results_averaged_ld_exp.csv", row.names=F)

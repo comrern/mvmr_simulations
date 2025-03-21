@@ -52,23 +52,21 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   df <- (cbind(df, G, G2))
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
   
-  ### Model LD
-    LD_inc <- 0.5 + (df[,"X2"])
-    LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
-    
-    LD_dec <- 1 - (df[,"X2"])
-    LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
-    
-    LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
-    LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):(2*(nsnps/3))], function(y_val) LD_dec * y_val)
-    
-    LD_const_mat <- matrix(rep(effs_x1[(2*(nsnps/3)+1):nsnps], each = n), nrow = n, ncol = nsnps/3, byrow = TRUE)
-    
-    effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
-    
-  df[,"X1_ss"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
-    
-  df[,"X1"] <- G[,]%*%effs_x1 + xi*df["X2"] + betaC*df[,"C"] + v_x1
+  # model LD
+  LD_inc <- 0.5 + (df[,"X2"])
+  LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
+  
+  LD_dec <- 1 - (df[,"X2"])
+  LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
+  
+  LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
+  LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):(2*(nsnps/3))], function(y_val) LD_dec * y_val)
+  
+  LD_const_mat <- matrix(rep(effs_x1[(2*(nsnps/3)+1):nsnps], each = n), nrow = n, ncol = nsnps/3, byrow = TRUE)
+  
+  effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
+  
+  df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
   
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
@@ -88,7 +86,7 @@ GWASres <- function(dat){
   est.snps <- snps + snpsc
   
   for(i in 1:est.snps){
-    a <- summary(lm(dat.1$X1_ss~dat.1[,i]))
+    a <- summary(lm(dat.1$X1~dat.1[,i]))
     MR_dat[i,"X1_b"] <- a$coefficient[2,1]
     MR_dat[i,"X1_se"] <- a$coefficient[2,2]
     MR_dat[i,"X1_p"] <- a$coefficient[2,4]
@@ -166,7 +164,7 @@ univariate_MR <- function(MR_dat){
   return(univ_results)
 }
 
-run_mvmr <- function(MR_dat){
+run_mvmr <- function(MR_dat, dat){
   
   
   dat_formatted <- format_mvmr(
@@ -177,8 +175,9 @@ run_mvmr <- function(MR_dat){
     RSID=MR_dat$id
   )
   
-  strength <- strength_mvmr(dat_formatted)
-  res_mvmr <- as.data.frame(ivw_mvmr(dat_formatted))
+  cov <- snpcov_mvmr(dat[,3:69], dat[,c(70,2)])
+  strength <- strength_mvmr(dat_formatted, gencov = cov)
+  res_mvmr <- as.data.frame(ivw_mvmr(dat_formatted, gencov = cov))
   res_mvmr$method <- "mvmr"
   res_mvmr$exposure <- c(1,2)
   res_mvmr$nsnp <- c(50, 50)                                ## fix properly ##
