@@ -21,7 +21,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 10
+reps =5
 run = 0
 results = data.frame()
 results_all = NULL
@@ -51,17 +51,15 @@ for (model in c("A","B","C","D"))  {
     b2 = params[5]
     betaC=params[6]
     beta2C=params[7]
-    LD_mod=params[10]
-    pi = params[8]
-    xi=params[9]
+    LD_mod=params[9]
+    xi=params[8]
     
     
-    dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, pi, LD_mod)
+    dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, LD_mod)
     #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
     #### 
     
     results[1,"model"] <- model
-    results[1,"pi"] <- pi
     results[1,"sample.size"] <- nobs
     
     ####Regression check######

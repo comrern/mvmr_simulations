@@ -1,7 +1,7 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mod){
   
   n=2*ss
   
@@ -12,10 +12,10 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
   if(AF_mod==F){
-    prob_inc <-  0.2 + 0.4 * df$X2  ## build probability vector based on value of X2 --> 
+    prob_inc <-  0.2 + 0.2 * df$X2  ## build probability vector based on value of X2 --> 
     ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
     
-    prob_dec <-  0.4 - 0.3 * df$X2
+    prob_dec <-  0.4 - 0.2 * df$X2
     
     prob_inc_g <- rep(prob_inc, times = nsnps/3)
     prob_dec_g <- rep(prob_dec, times = nsnps/3)
@@ -27,11 +27,22 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
     G <- cbind(G_inc, G_dec, G_cont)
     
   }
-  
 
-  G <- matrix(rbinom(n*nsnps, 2, 0.4), n, nsnps)
-  
-  G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
+  if(AF_mod==F){
+    prob_inc <-  0.2 + 0.4 * df$X2  ## build probability vector based on value of X2 --> 
+    ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
+    
+    prob_dec <-  0.4 - 0.4 * df$X2
+    
+    prob_inc_g <- rep(prob_inc, times = nsnps/3)
+    prob_dec_g <- rep(prob_dec, times = nsnps/3)
+    
+    G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, 2* (nsnps/3))
+    G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
+
+    G2 <- cbind(G_inc, G_dec, G_cont)
+    
+  }
   
   means <- c(0, 0)                                   
   cov_matrix <- matrix(c(1, 0, 0, 1),

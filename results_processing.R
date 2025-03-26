@@ -5,17 +5,14 @@ setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/")
 
 source('../modes_sims.R')
 source('../functions_sims.R')
-reps= 10000  
+reps= 10  
   ## test params:
-  # results <- results_ivw
+  # results <- results_models
   avg_res <- data.frame()
   
-  for (setup_mode in c(1,2,3,4)){
     rep_res <- data.frame()
-    single_model_res <- results[results$setup_mode == setup_mode,]
-    
+    setup_mode = 2
     for (model in c("A","B","C","D") ){
-      
       params <- setup(setup_mode, model)
       b1 = params[4]
       b2 = params[5]
@@ -27,7 +24,7 @@ reps= 10000
       row_res$method <- c("IVW","MVMR","MVMR")
       row_res$exposure <- c(1,1,2)
       
-      results_mode <-single_model_res[single_model_res$mode == model,]
+      results_mode <-results[results$mode == model,]
       
       row_res$b     <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1,]$b)
                             , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b)
@@ -56,17 +53,22 @@ reps= 10000
                             ,  sum(between(b2_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$uci)))
       
       
-
+      
       
       row_res$bias   <- list(mean(abs(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v))
                              , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_vmvmr))
                              , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v)))
       
+      row_res$F_stat <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$F_stat)
+                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$F_stat))
+                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$F_stat)))
+      
       rep_res <- rbind(rep_res, row_res)
+      
     }
-    rep_res$setup_mode <- setup_mode
+    
     avg_res <-rbind(avg_res,rep_res)
-  }  
+  
   
   avg_res <- avg_res %>%
     mutate(across(c(b, se, cov_b, sig, bias), as.numeric))  # Replace with actual column names
@@ -75,5 +77,5 @@ reps= 10000
   
   View(avg_res[avg_res$exposure ==1,])
   
-  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avergaed_results_fullsims.csv")
+  # write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avergaed_results_fullsims.csv")
  
