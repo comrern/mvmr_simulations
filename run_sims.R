@@ -68,7 +68,7 @@ for (setup_mode in c(1,2,3,4)){
             
           ### MVMR
             
-            mvmr_res <- run_mvmr(MR_dat)
+            mvmr_res <- run_mvmr(MR_dat, dat, setup_mode)
             
         ## format results
           res_run <- rbind(univariate_results, mvmr_res)
@@ -90,7 +90,7 @@ for (setup_mode in c(1,2,3,4)){
 
 ## save individual outputs for troubleshooting
 
-save(results_all, file=sprintf(paste0(output_path, "/results_%s.csv"), job_id))
+# save(results_all, file=sprintf(paste0(output_path, "/results_%s.csv"), job_id))
 
 
  

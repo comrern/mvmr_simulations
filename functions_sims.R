@@ -171,7 +171,7 @@ univariate_MR <- function(MR_dat){
   return(univ_results)
 }
 
-run_mvmr <- function(MR_dat){
+run_mvmr <- function(MR_dat, dat, setup_mode){
   
   
   dat_formatted <- format_mvmr(
@@ -182,8 +182,16 @@ run_mvmr <- function(MR_dat){
     RSID=MR_dat$id
   )
   
-  strength <- strength_mvmr(dat_formatted)
-  res_mvmr <- as.data.frame(ivw_mvmr(dat_formatted))
+  
+  if (setup_mode == 4){
+    cov <- snpcov_mvmr(dat[,3:41], dat[,c(42,2)])
+  } else    cov <- snpcov_mvmr(dat[,3:69], dat[,c(70,2)])
+
+  
+  
+  
+  strength <- strength_mvmr(dat_formatted, gencov = cov)
+  res_mvmr <- as.data.frame(ivw_mvmr(dat_formatted, gencov = cov))
   res_mvmr$method <- "mvmr"
   res_mvmr$exposure <- c(1,2)
   res_mvmr$nsnp <- c(50, 50)                                ## fix properly ##
@@ -195,92 +203,6 @@ run_mvmr <- function(MR_dat){
   return(res_mvmr)
 }
 
-
-avg_cals <- function(results, reps, setup_mode) {
-  
-  
-  
-  ## test params:
-  # results <- results_ivw
-  avg_res <- data.frame()
-  
-  for (setup_mode in c(1,2,3,4)){
-    rep_res <- data.frame()
-    single_model_res <- results[results$setup_mode == setup_mode,]
-    
-    for (model in c("A","B","C","D") ){
-      
-      params <- setup(setup_mode, model)
-      b1 = params[4]
-      b2 = params[5]
-      
-      
-      row_res <- as.data.frame(matrix(NA, nrow = 4, ncol = 8))
-      colnames(row_res) <- c("model","method","exposure","b","se","p","nsnp","cov_b")
-      row_res$model <- c(model, model)
-      row_res$method <- c("IVW","IVW","MVMR","MVMR")
-      row_res$exposure <- c(1,2,1,2)
-      
-      results_mode <-single_model_res[single_model_res$mode == model,]
-      
-      # Define the methods and exposures of interest
-      methods <- c("Inverse variance weighted", "mvmr")
-      exposures <- c(1, 2)
-      
-      # Compute means efficiently
-      summary_stats <- results_mode %>%
-        filter(method %in% methods, exp %in% exposures) %>%
-        group_by(method, exp) %>%
-        summarize(
-          b = mean(b, na.rm = TRUE),
-          se = mean(se, na.rm = TRUE),
-          pval = mean(pval, na.rm = TRUE),
-          nsnp = mean(nsnp, na.rm = TRUE),
-          .groups = "drop"
-        )
-      
-      # Convert to a list format
-      row_res$b <- summary_stats$b
-      row_res$se <- summary_stats$se
-      row_res$p <- summary_stats$pval
-      row_res$nsnp <- summary_stats$nsnp
-      
-      ## calculate coverage
-      
-      results_mode <- cbind.data.frame(results_mode, (results_mode$b - (1.96 * results_mode$se)),((results_mode$b + (1.96 * results_mode$se)))) 
-      names(results_mode)[9:10] <- c("lci","uci")
-      
-      b1_v <- rep(b1, time=reps)
-      b2_v <- rep(b2, time=reps)
-      
-      
-      # Extract filtered results
-      ivw_exp1 <- results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1, ]
-      ivw_exp2 <- results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 2, ]
-      mvmr_exp1 <- results_mode[results_mode$method == "mvmr" & results_mode$exp == 1, ]
-      mvmr_exp2 <- results_mode[results_mode$method == "mvmr" & results_mode$exp == 2, ]
-      
-      # Apply sum(between(...)) for each case using mapply() to handle vectorized inputs correctly
-      row_res$cov_b <- c(
-        sum(mapply(between, b1_v, ivw_exp1$lci, ivw_exp1$uci)),
-        sum(mapply(between, b2_v, ivw_exp2$lci, ivw_exp2$uci)),
-        sum(mapply(between, b1_v, mvmr_exp1$lci, mvmr_exp1$uci)),
-        sum(mapply(between, b2_v, mvmr_exp2$lci, mvmr_exp2$uci))
-      )
-      
-      row_res$cov_pct <- (row_res$cov_b / reps) *100
-      
-      rep_res <- rbind(rep_res, row_res)
-    }
-    rep_res$setup_mode <- setup_mode
-    avg_res <-rbind(avg_res,rep_res)
-  }  
-  
-  
-  
-  ###### TODO--> refactor to account for extra loops
-  return(avg_res) 
-}
 
 
 
