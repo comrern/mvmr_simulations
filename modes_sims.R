@@ -39,5 +39,5 @@ setup <- function(m,k){
   betaC = 0.8
   beta2C = 0.8
   
-  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, pi, xi, LD_mod))
+  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, LD_mod))
 }

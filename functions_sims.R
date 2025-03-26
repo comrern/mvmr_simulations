@@ -1,7 +1,7 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c,  LD_mod){
   
   n=2*ss
   
@@ -12,10 +12,10 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
   if(LD_mod==F){
-    prob_inc <-  0.2 + 0.4 * df$X2  ## build probability vector based on value of X2 --> 
+    prob_inc <-  0.3 + (0.05 * df$X2)  ## build probability vector based on value of X2 --> 
     ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
     
-    prob_dec <-  0.4 - 0.3 * df$X2
+    prob_dec <-  0.4 - (0.05 * df$X2)
     
     prob_inc_g <- rep(prob_inc, times = nsnps/3)
     prob_dec_g <- rep(prob_dec, times = nsnps/3)
@@ -28,9 +28,12 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
     
   }
   
+  
+  
   if(LD_mod==T){
     G <- matrix(rbinom(n*nsnps, 2, 0.4), n, nsnps)
   }
+
   G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
   
   means <- c(0, 0)                                   
@@ -46,7 +49,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(nsnps,0,0.08))
+  effs_x1 <- abs(rnorm(nsnps,0,0.05))
   
   
   df <- (cbind(df, G, G2))
@@ -54,10 +57,10 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   
   ### Model LD
   if(LD_mod==T){
-    LD_inc <- 0.5 + (df[,"X2"])
+    LD_inc <- 0.5 + 0.5 * (df[,"X2"])
     LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
     
-    LD_dec <- 1 - (df[,"X2"])
+    LD_dec <- 1 - 0.5 * (df[,"X2"])
     LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
     
     LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
