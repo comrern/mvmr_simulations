@@ -32,7 +32,6 @@ setup <- function(m,k){
   
   
   snpsc = ifelse(m==4, 5, 33)
-  LD_mod = ifelse(m==2, T, F)
   xi = ifelse(m==3, 1, 0)
   snps=33
   nobs = 25000
@@ -40,5 +39,5 @@ setup <- function(m,k){
   beta2C = 0.8
 
   
-  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, LD_mod))
+  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi))
 }

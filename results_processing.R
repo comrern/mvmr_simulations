@@ -2,14 +2,16 @@ setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/")
 
 # results <- read.table("./results_full_sims.csv")
 
-
-source('../modes_sims.R')
-source('../functions_sims.R')
-reps= 10  
+reps= 2  
   ## test params:
-  # results <- results_models
+  # results <- results_all
   avg_res <- data.frame()
   
+  mode_res <- data.frame()
+  for (LD_mod in c(TRUE,FALSE)){
+    rep_res <- data.frame()
+    single_model_res <- results[results$setup_mode == LD_mod,]
+    
     rep_res <- data.frame()
     setup_mode = 2
     for (model in c("A","B","C","D") ){
@@ -24,7 +26,7 @@ reps= 10
       row_res$method <- c("IVW","MVMR","MVMR")
       row_res$exposure <- c(1,1,2)
       
-      results_mode <-results[results$mode == model,]
+      results_mode <-single_model_res[single_model_res$mode == model,]
       
       row_res$b     <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1,]$b)
                             , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b)
@@ -66,8 +68,11 @@ reps= 10
       rep_res <- rbind(rep_res, row_res)
       
     }
+    rep_res$LD_mod <- LD_mod
+    mode_res <-rbind(mode_res,rep_res)
     
-    avg_res <-rbind(avg_res,rep_res)
+  }
+    avg_res <-rbind(avg_res,mode_res)
   
   
   avg_res <- avg_res %>%
