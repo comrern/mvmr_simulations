@@ -12,7 +12,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   df <- df[order(df$X2), ]
   
-  obs_af <- read.table("./af_subset", header=T)
+  obs_af <- read.table("../ld_reports/af_subset", header=T)
   
   # rep allele freqs to feed into binom 
   G <- data.frame(matrix(NA, nrow = nsnps, ncol = n))
@@ -49,7 +49,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   ### Model LD
 
   ## read observed LD variance 
-  obs_ld_dat <- read.table("./random_subset_matrix", header=T)
+  obs_ld_dat <- read.table("../ld_reports/test_ld_mat.txt", header=T)
   
   effs_ld_1 <- effs_x1 * obs_ld_dat$R2_p1
   effs_ld_2 <- effs_x1 * obs_ld_dat$R2_p2

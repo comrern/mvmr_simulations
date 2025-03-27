@@ -4,10 +4,12 @@ library(tidyverse)
 
 results <- read.csv("./combined_results10k.csv")
 
+# results <- results_models
+
 source("./modes_sims.R")
 source("./functions_sims.R")
 
-reps=10000
+reps=10
 rep_res <- data.frame()
 avg_res <- data.frame()
 
@@ -52,10 +54,14 @@ avg_res <- data.frame()
                           , sum(between(b1_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$uci))
                           ,  sum(between(b2_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$uci)))
     
-    row_res$bias   <- list(mean(abs(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v))
-                                , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_v))
-                                , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v)))
-                                
+    row_res$bias   <- list(abs(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v))
+                                , abs(mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_v))
+                                , abs(mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v)))
+    
+    row_res$MSE   <- list(mean((results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v)^2)
+                          , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_vmvmr)^2)
+                          , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v)^2))
+    
     
     rep_res <- rbind(rep_res, row_res)
   }
@@ -64,7 +70,7 @@ avg_res <- data.frame()
 
   
   avg_res <- avg_res %>%
-    mutate(across(c(b, se, cov_b, sig, bias), as.numeric))  # Replace with actual column names
+    mutate(across(c(b, se, cov_b, sig, bias, MSE), as.numeric))  # Replace with actual column names
   
 avg_res$cov_p <- (avg_res$cov_b/ reps)*100
 
