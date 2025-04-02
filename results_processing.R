@@ -1,6 +1,6 @@
-setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/")
+# setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/")
 
-# results <- read.table("./results_full_sims.csv")
+results <- read.table("./results_ld_rerun.csv")
 
 reps= 2  
   ## test params:

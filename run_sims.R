@@ -21,7 +21,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 2 
+reps = 10
 run = 0
 results = data.frame()
 results_all = NULL
@@ -99,7 +99,7 @@ for (LD_mod in c(TRUE,FALSE)){
   results_all <- rbind(results_all, results_models)
 }
 
-# save(results_models, file=sprintf(paste0(output_path, "/results_%s.rda"), job_id))
+save(results_all, file=sprintf(paste0(output_path, "/results_%s.rda"), job_id))
 
 
 # write.csv(results_averaged, "./results//results_averaged.csv")
