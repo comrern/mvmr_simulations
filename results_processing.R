@@ -43,7 +43,7 @@ reps= 2
       ## calculate coverage
       
       results_mode <- cbind.data.frame(results_mode, (results_mode$b - (1.96 * results_mode$se)),((results_mode$b + (1.96 * results_mode$se)))) 
-      names(results_mode)[10:11] <- c("lci","uci")
+      names(results_mode)[11:12] <- c("lci","uci")
       
       
       b1_v <- rep(b1, time=nrow(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]))
@@ -65,6 +65,11 @@ reps= 2
                              , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$F_stat))
                              , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$F_stat)))
       
+      row_res$mse <- list(mean((results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1,]$b - b1_v)^2),
+                          mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1,]$b - b1_vmvmr)^2),
+                          mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2,]$b - b2_v)^2))
+      
+      
       rep_res <- rbind(rep_res, row_res)
       
     }
@@ -76,11 +81,11 @@ reps= 2
   
   
   avg_res <- avg_res %>%
-    mutate(across(c(b, se, cov_b, sig, bias), as.numeric))  # Replace with actual column names
+    mutate(across(c(b, se, cov_b, sig, bias, F_stat, mse), as.numeric))  # Replace with actual column names
   
   avg_res$cov_p <- (avg_res$cov_b/ reps)*100
   
   View(avg_res[avg_res$exposure ==1,])
   
-  # write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avergaed_results_fullsims.csv")
+  # write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avg_test_ld_exp.csv")
  
