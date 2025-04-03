@@ -49,7 +49,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c,  LD_mod){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(nsnps,0,0.05))
+  effs_x1 <- abs(rnorm(nsnps,0.1,0.08))
   
   
   df <- (cbind(df, G, G2))
@@ -57,10 +57,10 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c,  LD_mod){
   
   ### Model LD
   if(LD_mod==T){
-    LD_inc <- 0.5 + 0.5 * (df[,"X2"])
+    LD_inc <- 0.5 + 0.1 * (df[,"X2"])
     LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
     
-    LD_dec <- 1 - 0.5 * (df[,"X2"])
+    LD_dec <- 1 - 0. * (df[,"X2"])
     LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
     
     LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
@@ -177,33 +177,52 @@ univariate_MR <- function(MR_dat){
 run_mvmr <- function(MR_dat, dat, setup_mode){
   
   
-  dat_formatted <- format_mvmr(
-    BXGs = MR_dat[,c("X1_b","X2_b")], 
-    BYG = MR_dat$Y_b, 
-    seBXGs = MR_dat[,c("X1_se","X2_se")], 
-    seBYG=MR_dat$Y_se, 
-    RSID=MR_dat$id
-  )
+  MR_dat <- MR_dat[(MR_dat$X1_p < 5e-8) | (MR_dat$X2_p < 5e-8) ,]
   
+  if (length(MR_dat) >= 1) {
+    
+    n_x1 <- sum(MR_dat$X1_p < 5e-8)
+    n_x2 <- sum(MR_dat$X2_p < 5e-8)
+    
+    dat_formatted <- format_mvmr(
+      BXGs = MR_dat[,c("X1_b","X2_b")], 
+      BYG = MR_dat$Y_b, 
+      seBXGs = MR_dat[,c("X1_se","X2_se")], 
+      seBYG=MR_dat$Y_se, 
+      RSID=MR_dat$id
+    )
+    
+    
+    
+    if (setup_mode == 4){
+        cov <- snpcov_mvmr(dat[,3:(length(MR_dat$X1_b) +3)], dat[,c("X1","X2")])
+    } else    cov <- snpcov_mvmr(dat[,3:(length(MR_dat$X1_b) +3)], dat[,c("X1","X2")])
+    
+    
+    
+    strength <- strength_mvmr(dat_formatted, gencov = cov)
+    res_mvmr <- as.data.frame(ivw_mvmr(dat_formatted, gencov = cov))
+    res_mvmr$method <- "mvmr"
+    res_mvmr$exposure <- c(1,2)
+    res_mvmr$nsnp <- c(n_x1, n_x2)                                ## fix properly ##
+    res_mvmr <- res_mvmr[,c(5,7,1,2,4,6)]
+    colnames(res_mvmr) <- c("method","nsnp","b","se","pval","exp")
+    res_mvmr$F_stat <- c(strength$exposure1, strength$exposure2)
+  } else {
+    
+    res_mvmr <- as.data.frame(matrix(rep(NA, 2 * 3), nrow = 2, ncol = 3))
+    res_mvmr$method <- "mvmr"
+    res_mvmr$exposure <- c(1,2)
+    res_mvmr$nsnp <- c(0, 0)   
+    res_mvmr <- res_mvmr[,c(4,6,1,2,3,5)]
+    colnames(res_mvmr) <- c("method","nsnp","b","se","pval","exp")
+    res_mvmr$F_stat <- c(strength$exposure1, strength$exposure2)
   
-  if (setup_mode == 4){
-    cov <- snpcov_mvmr(dat[,3:41], dat[,c(42,2)])
-  } else    cov <- snpcov_mvmr(dat[,3:69], dat[,c(70,2)])
+    
+    }
 
-  
-  
-  
-  strength <- strength_mvmr(dat_formatted, gencov = cov)
-  res_mvmr <- as.data.frame(ivw_mvmr(dat_formatted, gencov = cov))
-  res_mvmr$method <- "mvmr"
-  res_mvmr$exposure <- c(1,2)
-  res_mvmr$nsnp <- c(50, 50)                                ## fix properly ##
-  res_mvmr <- res_mvmr[,c(5,7,1,2,4,6)]
-  colnames(res_mvmr) <- c("method","nsnp","b","se","pval","exp")
-  res_mvmr$F_stat <- c(strength$exposure1, strength$exposure2)
-  
-  
-  return(res_mvmr)
+
+return(res_mvmr)
 }
 
 
