@@ -1,7 +1,7 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c,  LD_mod){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mod, snpB, snpvar){
   
   n=2*ss
   
@@ -11,11 +11,10 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c,  LD_mod){
   df$V1 <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
-  if(LD_mod==F){
-    prob_inc <-  0.3 + (0.05 * df$X2)  ## build probability vector based on value of X2 --> 
+    prob_inc <-  0.3 + (0.2 * df$X2)  ## build probability vector based on value of X2 --> 
     ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
     
-    prob_dec <-  0.4 - (0.05 * df$X2)
+    prob_dec <-  0.4 - (0.2 * df$X2)
     
     prob_inc_g <- rep(prob_inc, times = nsnps/3)
     prob_dec_g <- rep(prob_dec, times = nsnps/3)
@@ -26,15 +25,23 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c,  LD_mod){
     
     G <- cbind(G_inc, G_dec, G_cont)
     
-  }
-  
-  
-  
-  if(LD_mod==T){
-    G <- matrix(rbinom(n*nsnps, 2, 0.4), n, nsnps)
-  }
+    prob_inc <-  0.2 + (0.5 * df$X2)  ## build probability vector based on value of X2 --> 
+    ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
+    
+    prob_dec <-  1 - (0.5 * df$X2)
+    
+    
+    G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, (nsnps/3))
+    G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
+    G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
+    
+    G2 <- cbind(G_inc, G_dec, G_cont)
+    
 
-  G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
+         
+
+
+
   
   means <- c(0, 0)                                   
   cov_matrix <- matrix(c(1, 0, 0, 1),
@@ -49,18 +56,17 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c,  LD_mod){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(nsnps,0.1,0.08))
+  effs_x1 <- abs(rnorm(nsnps,snpB,snpvar))
   
   
   df <- (cbind(df, G, G2))
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
   
   ### Model LD
-  if(LD_mod==T){
-    LD_inc <- 0.5 + 0.1 * (df[,"X2"])
+    LD_inc <- 0.5 + 0.5 * (df[,"X2"])
     LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
     
-    LD_dec <- 1 - 0. * (df[,"X2"])
+    LD_dec <- 1 - 0.5 * (df[,"X2"])
     LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
     
     LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
@@ -72,11 +78,6 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c,  LD_mod){
     
     df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
     
-  }
-  
-  if(LD_mod==F){
-    df[,"X1"] <- G[,]%*%effs_x1 + xi*df["X2"] + betaC*df[,"C"] + v_x1
-  }
   
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
@@ -195,8 +196,8 @@ run_mvmr <- function(MR_dat, dat, setup_mode){
     
     
     if (setup_mode == 4){
-        cov <- snpcov_mvmr(dat[,3:(length(MR_dat$X1_b) +3)], dat[,c("X1","X2")])
-    } else    cov <- snpcov_mvmr(dat[,3:(length(MR_dat$X1_b) +3)], dat[,c("X1","X2")])
+        cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
+    } else    cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
     
     
     

@@ -31,13 +31,38 @@ setup <- function(m,k){
   }
   
   
-  snpsc = ifelse(m==4, 5, 33)
-  LD_mod = ifelse(m==2, T, F)
-  xi = ifelse(m==3, 1, 0)
-  snps=33
+  if (m == 1) {
+    snpB = 0
+    snpvar=0.05
+    x2_mod = 1
+  } 
+  if (m == 2) {
+    snpB = 0.1
+    snpvar=0.05
+    
+    x2_mod = 1.5
+  } 
+  if (m == 3) {
+    snpB = 0.2
+    snpvar=0.05
+    
+    x2_mod = 2
+  } 
+  if (m == 4) {
+    snpB = 0.3
+    
+    x2_mod = 2.5
+  } 
+  
+  snpsc =  33
+  LD_mod = T
+  snps= 33
   nobs = 25000
   betaC = 0.8
   beta2C = 0.8
+  xi = 0
   
-  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, LD_mod))
+  b2 = b2 * x2_mod
+  
+  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, LD_mod, snpB, snpvar))
 }

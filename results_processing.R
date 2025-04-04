@@ -21,8 +21,8 @@ reps= 10000
       b2 = params[5]
       
       
-      row_res <- as.data.frame(matrix(NA, nrow = 3, ncol = 7))
-      colnames(row_res) <- c("model","method","exposure","b","se","cov_b","F_stat")
+      row_res <- as.data.frame(matrix(NA, nrow = 3, ncol = 8))
+      colnames(row_res) <- c("model","method","exposure","b","se","cov_b","F_stat", "nsnp")
       row_res$model <- c(model, model, model)
       row_res$method <- c("IVW","MVMR","MVMR")
       row_res$exposure <- c(1,1,2)
@@ -63,9 +63,12 @@ reps= 10000
                              , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v)))
       
       row_res$F_stat <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$F_stat)
-                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$F_stat))
-                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$F_stat)))
+                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$F_stat))
+                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$F_stat)))
       
+      row_res$nsnp <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$nsnp, na.rm = T)
+                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$nsnp), na.rm = T)
+                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$nsnp), na.rm = T))
       
       rep_res <- rbind(rep_res, row_res)
     }
@@ -74,7 +77,7 @@ reps= 10000
   }  
   
   avg_res <- avg_res %>%
-    mutate(across(c(b, se, cov_b, sig, bias), as.numeric))  # Replace with actual column names
+    mutate(across(c(b, se, cov_b, sig, bias, F_stat, nsnp), as.numeric))  # Replace with actual column names
   
   avg_res$cov_p <- (avg_res$cov_b/ reps)*100
   
