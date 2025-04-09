@@ -187,26 +187,57 @@ univariate_MR <- function(MR_dat, LD_mod){
   return(univ_results)
 }
 
-run_mvmr <- function(MR_dat, dat){
+run_mvmr <- function(MR_dat, dat, LD_mod){
+ 
+ if (LD_mod==FALSE) {
+    
+     MR_dat <- MR_dat[(MR_dat$SNP %in% MR_dat[MR_dat$x_novar_p < 5e-8,]$id) | (MR_dat$X2_p < 5e-8),]
+    
+  } else    MR_dat <- MR_dat[(MR_dat$X1_p < 5e-8) | (MR_dat$X2_p < 5e-8) ,]
   
+
   
-  dat_formatted <- format_mvmr(
-    BXGs = MR_dat[,c("X1_b","X2_b")], 
-    BYG = MR_dat$Y_b, 
-    seBXGs = MR_dat[,c("X1_se","X2_se")], 
-    seBYG=MR_dat$Y_se, 
-    RSID=MR_dat$id
-  )
-  
-  cov <- snpcov_mvmr(dat[,3:69], dat[,c(70,2)])
-  strength <- strength_mvmr(dat_formatted, gencov = cov)
-  res_mvmr <- as.data.frame(ivw_mvmr(dat_formatted, gencov = cov))
-  res_mvmr$method <- "mvmr"
-  res_mvmr$exposure <- c(1,2)
-  res_mvmr$nsnp <- c(50, 50)                                ## fix properly ##
-  res_mvmr <- res_mvmr[,c(5,7,1,2,4,6)]
-  colnames(res_mvmr) <- c("method","nsnp","b","se","pval","exp")
-  res_mvmr$F_stat <- c(strength$exposure1, strength$exposure2)
+  if (length(MR_dat) >= 1) {
+    
+    n_x1 <- sum(MR_dat$X1_p < 5e-8)
+    n_x2 <- sum(MR_dat$X2_p < 5e-8)
+    
+    dat_formatted <- format_mvmr(
+      BXGs = MR_dat[,c("X1_b","X2_b")], 
+      BYG = MR_dat$Y_b, 
+      seBXGs = MR_dat[,c("X1_se","X2_se")], 
+      seBYG=MR_dat$Y_se, 
+      RSID=MR_dat$id
+    )
+    
+    
+    
+    if (setup_mode == 4){
+      cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
+    } else    cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
+    
+    
+    
+    strength <- strength_mvmr(dat_formatted, gencov = cov)
+    res_mvmr <- as.data.frame(ivw_mvmr(dat_formatted, gencov = cov))
+    res_mvmr$method <- "mvmr"
+    res_mvmr$exposure <- c(1,2)
+    res_mvmr$nsnp <- c(n_x1, n_x2)                                ## fix properly ##
+    res_mvmr <- res_mvmr[,c(5,7,1,2,4,6)]
+    colnames(res_mvmr) <- c("method","nsnp","b","se","pval","exp")
+    res_mvmr$F_stat <- c(strength$exposure1, strength$exposure2)
+  } else {
+    
+    res_mvmr <- as.data.frame(matrix(rep(NA, 2 * 3), nrow = 2, ncol = 3))
+    res_mvmr$method <- "mvmr"
+    res_mvmr$exposure <- c(1,2)
+    res_mvmr$nsnp <- c(0, 0)   
+    res_mvmr <- res_mvmr[,c(4,6,1,2,3,5)]
+    colnames(res_mvmr) <- c("method","nsnp","b","se","pval","exp")
+    res_mvmr$F_stat <- c(strength$exposure1, strength$exposure2)
+    
+    
+  }
   
   
   return(res_mvmr)

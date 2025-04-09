@@ -79,7 +79,7 @@ for (LD_mod in c(TRUE,FALSE)){
       
       ### MVMR
       
-      mvmr_res <- run_mvmr(MR_dat, dat)
+      mvmr_res <- run_mvmr(MR_dat, dat, LD_mod)
       
       ## format results
       res_run <- rbind(univariate_results, mvmr_res)
