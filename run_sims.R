@@ -21,7 +21,7 @@ library(tidyverse)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 2
+reps = 1000
 results = data.frame()
 results_all = NULL
 results_ivw = NULL
@@ -89,7 +89,7 @@ for (setup_mode in c(1,2,3,4)){
 
 ## save individual outputs for troubleshooting
 
-# save(results_all, file=sprintf(paste0(output_path, "/results_%s.csv"), job_id))
+save(results_all, file=sprintf(paste0(output_path, "/results_%s.csv"), job_id))
 
 
  
