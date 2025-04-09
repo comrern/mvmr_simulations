@@ -153,24 +153,40 @@ univariate_MR <- function(MR_dat){
                      effect_allele_col = "EA"
   )
   
-  dat1 <- harmonise_data(exp1, out)
-  dat2 <- harmonise_data(exp2, out)
+  exp1 <- exp1[exp1$pval.exposure < 5e-8,]
+  exp2 <- exp2[exp2$pval.exposure < 5e-8,]
   
-  dat1 <- dat1[dat1$pval.exposure <= 5e-8,]
-  dat2 <- dat2[dat2$pval.exposure <= 5e-8,]
+  if (length(exp1[exp1$pval.exposure < 5e-8,]) >= 1){
   
-  f_1 <- mean((dat1$beta.exposure^2)/ (dat1$se.exposure^2))
-  f_2 <- mean((dat2$beta.exposure^2)/ (dat2$se.exposure^2))
-  
-  mr1 <- mr(dat1)
-  
-  mr2 <- mr1
-  
-  mr1$exp <- 1
-  mr2$exp <- 2
-  
-  univ_results <- rbind(mr1, mr2)
-  univ_results <- univ_results[,5:10]
+    dat1 <- harmonise_data(exp1, out)
+    dat2 <- harmonise_data(exp2, out)
+    
+    
+    f_1 <- mean((dat1$beta.exposure^2)/ (dat1$se.exposure^2))
+    f_2 <- mean((dat2$beta.exposure^2)/ (dat2$se.exposure^2))
+    
+    mr1 <- mr(dat1)
+    
+    mr2 <- mr1
+    
+    mr1$exp <- 1
+    mr2$exp <- 2
+    
+    univ_results <- rbind(mr1, mr2)
+    univ_results <- univ_results[,5:10]
+    
+  } else {
+    
+    f_1 <- NULL
+    f_2 <- NULL
+    
+    univ_results <- as.data.frame(matrix(rep(NA, 2 * 5), nrow = 2, ncol = 4))
+    univ_results$exp <- c(1,2)
+    
+  }
+    
+    
+
   univ_results$F_stat <- c(f_1,f_2)
   return(univ_results)
 }

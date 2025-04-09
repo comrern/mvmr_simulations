@@ -1,11 +1,17 @@
 setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/")
 
-# results <- read.table("./results_full_sims.csv")
+results <- read.table("./results_full_sims.csv")
 
 
 source('../modes_sims.R')
 source('../functions_sims.R')
-reps= 10000
+
+
+
+results <- read.table("./effect_size_sims/results_efect_size_sims.csv")
+
+
+reps= 4000
   ## test params:
   # results <- results_all
   avg_res <- data.frame()
@@ -83,5 +89,5 @@ reps= 10000
   
   View(avg_res[avg_res$exposure ==1,])
   
-  # write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avergaed_results_fullsims.csv")
+  # write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/effect_size_sims/avergaed_effect_size.csv")
  
