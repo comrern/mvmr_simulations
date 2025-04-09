@@ -191,7 +191,7 @@ run_mvmr <- function(MR_dat, dat, LD_mod){
  
  if (LD_mod==FALSE) {
     
-     MR_dat <- MR_dat[(MR_dat$SNP %in% MR_dat[MR_dat$x_novar_p < 5e-8,]$id) | (MR_dat$X2_p < 5e-8),]
+     MR_dat <- MR_dat[(MR_dat$id %in% MR_dat[MR_dat$x_novar_p < 5e-8,]$id) | (MR_dat$X2_p < 5e-8),]
     
   } else    MR_dat <- MR_dat[(MR_dat$X1_p < 5e-8) | (MR_dat$X2_p < 5e-8) ,]
   

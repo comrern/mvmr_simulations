@@ -21,7 +21,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 10
+reps = 500 
 run = 0
 results = data.frame()
 results_all = NULL
@@ -34,8 +34,8 @@ results_ivw = data.frame()
 
 for (LD_mod in c(TRUE,FALSE)){
   results_models <- data.frame()
-  
-    for (model in c("A","B","C","D"))  {
+
+      for (model in c("A","B","C","D"))  {
     results_rep = data.frame()
     run=0
     for(j in 1:reps){  
