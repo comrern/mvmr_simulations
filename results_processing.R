@@ -1,8 +1,11 @@
-# setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/")
+setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/")
+source('modes_sims.R')
+source('functions_sims.R')
 
-results <- read.table("./results_ld_rerun.csv")
 
-reps= 2  
+results <- read.table("./results/ld_run5/rerun//results_ld_rerun.csv")
+
+reps= 5000  
   ## test params:
   # results <- results_all
   avg_res <- data.frame()
@@ -87,5 +90,5 @@ reps= 2
   
   View(avg_res[avg_res$exposure ==1,])
   
-  # write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avg_test_ld_exp.csv")
+  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avg_test_ld_exp.csv")
  
