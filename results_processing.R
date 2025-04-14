@@ -3,7 +3,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-results <- read.table("./results/ld_run5/rerun//results_ld_rerun.csv")
+results <- read.table("./results/ld_run5/rerun/results_ld_rerun.csv")
 
 reps= 5000  
   ## test params:

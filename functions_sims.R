@@ -68,7 +68,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c){
   
   df[,"X1_novar"] <- G[,]%*%effs_x1 + xi*df["X2"] + betaC*df[,"C"] + v_x1  
   
-  df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
+  df[,"Y"] <- beta1*df[,"X1_novar"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
   
   data <- df
