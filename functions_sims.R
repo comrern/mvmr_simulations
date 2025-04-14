@@ -59,7 +59,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c,  LD_mod){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(nsnps,0.1,0.08))
+  effs_x1 <- abs(rnorm(nsnps,0,0.05))
   
   
   df <- (cbind(df, G, G2))
@@ -67,25 +67,27 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c,  LD_mod){
   
   ### Model LD
   if(LD_mod==T){
-    LD_inc <- 0.5 + 0.2 * (df[,"X2"])
+    LD_inc <- 0.5 + (df[,"X2"])
     LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
     
-    LD_dec <- 1 - 0.2 * (df[,"X2"])
+    LD_dec <- 1 - (df[,"X2"])
     LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
+    
     
     LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
     LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):(2*(nsnps/3))], function(y_val) LD_dec * y_val)
     
-    LD_const_mat <- matrix(rep(effs_x1[(2*(nsnps/3)+1):nsnps], each = n), nrow = n, ncol = nsnps/3, byrow = TRUE)
+    LD_const_mat  <- sapply(effs_x1[(2*(nsnps/3)+1):nsnps], function(y_val)  rep(1, nrow(df)) * y_val)
+    
     
     effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
     
-    df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
+    df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df[,"X2"] + betaC*df[,"C"] + v_x1
     
   }
   
   if(LD_mod==F){
-    df[,"X1"] <- G[,]%*%effs_x1 + xi*df["X2"] + betaC*df[,"C"] + v_x1
+    df[,"X1"] <- G[,]%*%effs_x1 + xi*df[,"X2"] + betaC*df[,"C"] + v_x1
   }
   
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
@@ -221,8 +223,8 @@ run_mvmr <- function(MR_dat, dat, setup_mode){
     
     
     if (setup_mode == 4){
-        cov <- snpcov_mvmr(dat[,3:(length(MR_dat$X1_b) +3)], dat[,c("X1","X2")])
-    } else    cov <- snpcov_mvmr(dat[,3:(length(MR_dat$X1_b) +3)], dat[,c("X1","X2")])
+      cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
+    } else    cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
     
     
     

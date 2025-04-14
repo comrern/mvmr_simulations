@@ -21,7 +21,7 @@ library(tidyverse)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 1000
+reps = 2
 results = data.frame()
 results_all = NULL
 results_ivw = NULL
@@ -32,7 +32,7 @@ results_all = data.frame()
 results_ivw = data.frame()
 
 for (setup_mode in c(1,2,3,4)){
-  
+  setup_mode=2
   results_models <- data.frame()
   for (model in c("A","B","C","D"))  {
   results_rep = data.frame()
