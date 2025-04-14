@@ -68,7 +68,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c){
   
   df[,"X1_novar"] <- G[,]%*%effs_x1 + xi*df["X2"] + betaC*df[,"C"] + v_x1  
   
-  df[,"Y"] <- beta1*df[,"X1_novar"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
+  df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
   
   data <- df
@@ -109,8 +109,7 @@ GWASres <- function(dat, LD_mod){
       MR_dat[i,"X1_b"] <- d$coefficient[2,1]
       MR_dat[i,"X1_se"] <- d$coefficient[2,2]
       MR_dat[i,"X1_p"] <- d$coefficient[2,4]
-      MR_dat[i,"X1_r2"] <- d$r.squared
-      
+
       
        }
     
