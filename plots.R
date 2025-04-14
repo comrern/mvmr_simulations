@@ -16,6 +16,7 @@ data$labels <- c("IVW - exposure 1", "MVMR - exposure 1","IVW - exposure 1", "MV
 ### subplots
 
 
+
 for (mode in c(1,2,3,4)){
   
   mode_dat <- data[data$setup_mode == mode,]
@@ -24,44 +25,33 @@ for (mode in c(1,2,3,4)){
   
   
   print(combined_plot + geom_point() +
-    xlab("effect size") + 
-    theme_bw() +
-    geom_errorbarh(height=.1) +
-    geom_vline(xintercept=0) +
-    scale_y_discrete(drop=T, labels=data$labels) +  
-    facet_wrap(~ model, scale= "free_y") +
-    ggtitle(paste("Setup mode", mode))) +
-    theme(legend.position="none")
-   
+          xlab("Odds ratio") + 
+          geom_errorbarh(height=.1) +
+          geom_vline(xintercept=0.4, linetype = "dashed", color = "red") +
+          geom_vline(xintercept=0) +
+          scale_y_discrete(drop=T, labels=data$labels) +  
+          facet_wrap(~ model, scale= "free_y") +
+          ggtitle(paste0("Setup mode"), mode))
+  
   
 }
 
-
 ##### plot increasing effect size for model B
 
-data_eff_size_plot <- data[data$model == "B" & data$method == "MVMR",]
+for (model in c("A","B","C","D")) {
 
-ggplot(data_eff_size_plot, aes(x = setup_mode, y = b)) +
-  geom_point(size = 3) +  # dots for point estimates
-  geom_errorbar(aes(ymin = lci, ymax = uci), width = 0.2) +  # CI bars
-  geom_hline(yintercept = 0.4, linetype = "dashed", color = "red") +  # intercept line
-  scale_x_continuous(breaks = 1:4) +
-  labs(x = "setup mode", y = "Effect size (beta)", title = "MVMR causal effect estimate for exposure 1 with increasing effect size of SNPs on expousre 1") +
-  geom_hline(yintercept = 0) +
-  theme_minimal()
-
-
-data_eff_size_plot <- data[data$model == "D" & data$method == "MVMR",] ## re-run on model D
-
-ggplot(data_eff_size_plot, aes(x = setup_mode, y = b)) +
-  geom_point(size = 3) +  # dots for point estimates
-  geom_errorbar(aes(ymin = lci, ymax = uci), width = 0.2) +  # CI bars
-  geom_hline(yintercept = 0.4, linetype = "dashed", color = "red") +  # intercept line
-  scale_x_continuous(breaks = 1:4) +
-  labs(x = "setup mode", y = "Effect size (beta)") +
-  geom_hline(yintercept = 0) +
-  theme_minimal()
-
-
+    data_eff_size_plot <- data[data$model == model & data$exposure == "1" & data$method == "MVMR",]
+    
+    print(ggplot(data_eff_size_plot, aes(x = setup_mode, y = b)) +
+      geom_point(size = 3) +  # dots for point estimates
+      geom_errorbar(aes(ymin = lci, ymax = uci), width = 0.2) +  # CI bars
+      geom_hline(yintercept = 0.4, linetype = "dashed", color = "red") +  # intercept line
+      scale_x_continuous(breaks = 1:4) +
+      labs(x = "setup mode", y = "Effect size (beta)", title = paste("MVMR causal effect estimate for exposure 1 with increasing effect size of SNPs on expousre 1 with model", model)) +
+      geom_hline(yintercept = 0) +
+      theme_minimal())
+    
+    
+}
 
 
