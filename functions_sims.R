@@ -60,8 +60,9 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c){
   LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
   LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):(2*(nsnps/3))], function(y_val) LD_dec * y_val)
   
-  LD_const_mat <- matrix(rep(effs_x1[(2*(nsnps/3)+1):nsnps], each = n), nrow = n, ncol = nsnps/3, byrow = TRUE)
+  LD_const_mat  <- sapply(effs_x1[(2*(nsnps/3)+1):nsnps], function(y_val)  rep(1, nrow(df)) * y_val)
   
+
   effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
   
   df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
