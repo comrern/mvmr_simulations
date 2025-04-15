@@ -5,7 +5,7 @@ job_id <- ((args[1]))
 message("job number ", job_id)
 
 
-setwd("/user/work/kb22541/simulations")
+setwd("/user/work/kb22541/simulations/ld_variance_check")
 output_path <- "./results"
 .libPaths("/user/work/kb22541/rlib")
 
@@ -21,7 +21,7 @@ library(tidyverse)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 4
+reps = 500
 results = data.frame()
 results_all = NULL
 results_ivw = NULL
