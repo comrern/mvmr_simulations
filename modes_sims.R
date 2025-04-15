@@ -36,13 +36,13 @@ setup <- function(m,k){
     
   } 
   if (m == 2) {
-    ld_mag = 0.25
+    ld_mag = 0.33
       } 
   if (m == 3) {
-    ld_mag = 0.5
+    ld_mag = 0.66
   } 
   if (m == 4) {
-    ld_mag = 0.75
+    ld_mag = 1
       } 
   
   snpsc =  33
