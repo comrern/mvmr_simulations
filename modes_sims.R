@@ -32,27 +32,18 @@ setup <- function(m,k){
   
   
   if (m == 1) {
-    snpB = 0
-    snpvar=0.05
-    x2_mod = 1
+    ld_mag = 0
+    
   } 
   if (m == 2) {
-    snpB = 0.1
-    snpvar=0.05
-    
-    x2_mod = 1.5
-  } 
+    ld_mag = 0.25
+      } 
   if (m == 3) {
-    snpB = 0.2
-    snpvar=0.05
-    
-    x2_mod = 2
+    ld_mag = 0.5
   } 
   if (m == 4) {
-    snpB = 0.3
-    
-    x2_mod = 2.5
-  } 
+    ld_mag = 0.75
+      } 
   
   snpsc =  33
   LD_mod = T
@@ -62,7 +53,6 @@ setup <- function(m,k){
   beta2C = 0.8
   xi = 0
   
-  b2 = b2 * x2_mod
   
-  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, LD_mod, snpB, snpvar))
+  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, LD_mod, ld_mag))
 }

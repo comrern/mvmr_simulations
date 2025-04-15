@@ -1,7 +1,7 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mod, snpB, snpvar){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mod, ld_mag){
   
   n=2*ss
   
@@ -56,18 +56,18 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mod, snpB, sn
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(nsnps,snpB,snpvar))
+  effs_x1 <- abs(rnorm(nsnps,0,0.05))
   
   
   df <- (cbind(df, G, G2))
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
   
   ### Model LD
-    LD_inc <- 0.5 + 0.5 * (df[,"X2"])
+    LD_inc <- 0.5 + (ld_mag * df[,"X2"])
     LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
     
-    LD_dec <- 1 - 0.5 * (df[,"X2"])
-    LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
+    LD_dec <- 1 - (ld_mag * df[,"X2"])
+    LD_dec <- ifelse(LD_dec < 0,0.1 , LD_dec)
     
     LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
     LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):(2*(nsnps/3))], function(y_val) LD_dec * y_val)
@@ -211,9 +211,8 @@ run_mvmr <- function(MR_dat, dat, setup_mode){
     
     
     
-    if (setup_mode == 4){
-        cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
-    } else    cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
+
+    cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
     
     
     
