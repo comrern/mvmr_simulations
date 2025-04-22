@@ -1,7 +1,7 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c,  LD_mod){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, LD_mod){
   
   n=2*ss
   
@@ -167,7 +167,7 @@ univariate_MR <- function(MR_dat){
   exp1 <- exp1[exp1$pval.exposure < 5e-8,]
   exp2 <- exp2[exp2$pval.exposure < 5e-8,]
   
-  if (length(exp1[exp1$pval.exposure < 5e-8,]) >= 1){
+  if (nrow(exp1[exp1$pval.exposure < 5e-8,]) > 1){
     
     dat1 <- harmonise_data(exp1, out)
     dat2 <- harmonise_data(exp2, out)
@@ -185,20 +185,18 @@ univariate_MR <- function(MR_dat){
     
     univ_results <- rbind(mr1, mr2)
     univ_results <- univ_results[,5:10]
+    univ_results$F_stat <- c(f_1,f_2)
     
   } else {
-    
-    f_1 <- NULL
-    f_2 <- NULL
-    
-    univ_results <- as.data.frame(matrix(rep(NA, 2 * 5), nrow = 2, ncol = 4))
+
+    univ_results <- as.data.frame(matrix(rep(NA, 2 * 5), nrow = 2, ncol = 5))
+    univ_results[,2] <- c(0,0)
     univ_results$exp <- c(1,2)
+    univ_results$F_stat <- c(NA,NA)
+    names(univ_results) <- c("method", "nsnp","b","se","pval","exp","F_stat")
     
   }
-  
-  
-  
-  univ_results$F_stat <- c(f_1,f_2)
+
   return(univ_results)
 }
 
@@ -207,7 +205,7 @@ run_mvmr <- function(MR_dat, dat, setup_mode){
   
   MR_dat <- MR_dat[(MR_dat$X1_p < 5e-8) | (MR_dat$X2_p < 5e-8) ,]
   
-  if (length(MR_dat) >= 1) {
+  if (nrow(MR_dat) >= 2) {
     
     n_x1 <- sum(MR_dat$X1_p < 5e-8)
     n_x2 <- sum(MR_dat$X2_p < 5e-8)
@@ -222,9 +220,8 @@ run_mvmr <- function(MR_dat, dat, setup_mode){
     
     
     
-    if (setup_mode == 4){
-      cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
-    } else    cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
+    
+    cov <- snpcov_mvmr(dat[,MR_dat$id], dat[,c("X1","X2")])
     
     
     
@@ -244,14 +241,15 @@ run_mvmr <- function(MR_dat, dat, setup_mode){
     res_mvmr$nsnp <- c(0, 0)   
     res_mvmr <- res_mvmr[,c(4,6,1,2,3,5)]
     colnames(res_mvmr) <- c("method","nsnp","b","se","pval","exp")
-    res_mvmr$F_stat <- c(strength$exposure1, strength$exposure2)
-  
+    res_mvmr$F_stat <- c(NA, NA)
     
-    }
-
-
-return(res_mvmr)
+    
+  }
+  
+  
+  return(res_mvmr)
 }
+
 
 
 

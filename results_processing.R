@@ -9,7 +9,7 @@ reps= 10000
   ## test params:
   # results <- results_all
   avg_res <- data.frame()
-  
+  model_res <- data.frame()
   for (setup_mode in c(1,2,3,4)){
     rep_res <- data.frame()
     single_model_res <- results[results$setup_mode == setup_mode,]
@@ -74,11 +74,9 @@ reps= 10000
       
       
       rep_res <- rbind(rep_res, row_res)
-      
     }
     rep_res$setup_mode <- setup_mode
-    rep_res <-rbind(rep_res,rep_res)
-    
+    avg_res <-rbind(avg_res,rep_res)
   }
   avg_res <-rbind(avg_res,rep_res)
   

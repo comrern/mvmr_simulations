@@ -32,7 +32,7 @@ results_all = data.frame()
 results_ivw = data.frame()
 
 for (setup_mode in c(1,2,3,4)){
-  setup_mode=2
+
   results_models <- data.frame()
   for (model in c("A","B","C","D"))  {
   results_rep = data.frame()
@@ -51,7 +51,7 @@ for (setup_mode in c(1,2,3,4)){
             xi=params[8]
             
             
-            dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C,  LD_mod)
+            dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, LD_mod)
               #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
           #### 
           
