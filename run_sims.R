@@ -21,7 +21,7 @@ library(tidyverse)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 2
+reps = 1000
 results = data.frame()
 results_all = NULL
 results_ivw = NULL
