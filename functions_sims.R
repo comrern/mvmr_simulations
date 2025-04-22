@@ -1,7 +1,7 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mod, ld_mag){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, LD_mod, ld_mag){
   
   n=2*ss
   
@@ -11,19 +11,8 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mod, ld_mag){
   df$V1 <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
-    prob_inc <-  0.3 + (0.2 * df$X2)  ## build probability vector based on value of X2 --> 
-    ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
-    
-    prob_dec <-  0.4 - (0.2 * df$X2)
-    
-    prob_inc_g <- rep(prob_inc, times = nsnps/3)
-    prob_dec_g <- rep(prob_dec, times = nsnps/3)
-    
-    G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, (nsnps/3))
-    G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
-    G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
-    
-    G <- cbind(G_inc, G_dec, G_cont)
+
+    G <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
     
     prob_inc <-  0.2 + (0.5 * df$X2)  ## build probability vector based on value of X2 --> 
     ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
@@ -37,12 +26,6 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mod, ld_mag){
     
     G2 <- cbind(G_inc, G_dec, G_cont)
     
-
-         
-
-
-
-  
   means <- c(0, 0)                                   
   cov_matrix <- matrix(c(1, 0, 0, 1),
                        ncol = 2)
@@ -56,27 +39,28 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mod, ld_mag){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(nsnps,0,0.05))
+  effs_x1 <- abs(rnorm(nsnps,0.1,0.05))
   
+  print(ld_mag)
   
   df <- (cbind(df, G, G2))
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
-  
+
   ### Model LD
-    LD_inc <- 0.5 + (ld_mag * df[,"X2"])
-    LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
-    
-    LD_dec <- 1 - (ld_mag * df[,"X2"])
-    LD_dec <- ifelse(LD_dec < 0,0.1 , LD_dec)
-    
-    LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
-    LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):(2*(nsnps/3))], function(y_val) LD_dec * y_val)
-    
-    LD_const_mat  <- sapply(effs_x1[(2*(nsnps/3)+1):nsnps], function(y_val)  rep(1, nrow(df)) * y_val)
-    
-    effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
-    
-    df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
+  LD_inc <- 0 + (ld_mag * df[,"X2"])
+  LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
+  
+  LD_dec <- 1 - (ld_mag * df[,"X2"])
+  LD_dec <- ifelse(LD_dec < 0,0.1 , LD_dec)
+  
+  LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
+  LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):(2*(nsnps/3))], function(y_val) LD_dec * y_val)
+  
+  LD_const_mat  <- sapply(effs_x1[(2*(nsnps/3)+1):nsnps], function(y_val)  rep(1, nrow(df)) * y_val)
+  
+  effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
+  
+  df[,"X1"] <- rowSums(G[,]*effs_mat) + betaC*df[,"C"] + v_x1
     
   
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
@@ -156,7 +140,7 @@ univariate_MR <- function(MR_dat){
   exp1 <- exp1[exp1$pval.exposure < 5e-8,]
   exp2 <- exp2[exp2$pval.exposure < 5e-8,]
   
-  if (length(exp1[exp1$pval.exposure < 5e-8,]) >= 1){
+  if (nrow(exp1[exp1$pval.exposure < 5e-8,]) > 1){
   
     dat1 <- harmonise_data(exp1, out)
     dat2 <- harmonise_data(exp2, out)
@@ -174,20 +158,23 @@ univariate_MR <- function(MR_dat){
     
     univ_results <- rbind(mr1, mr2)
     univ_results <- univ_results[,5:10]
+    univ_results$F_stat <- c(f_1,f_2)
     
   } else {
     
-    f_1 <- NULL
-    f_2 <- NULL
     
-    univ_results <- as.data.frame(matrix(rep(NA, 2 * 5), nrow = 2, ncol = 4))
+    
+    univ_results <- as.data.frame(matrix(rep(NA, 2 * 5), nrow = 2, ncol = 5))
+    univ_results[,2] <- c(0,0)
     univ_results$exp <- c(1,2)
+    univ_results$F_stat <- c(NA,NA)
+    names(univ_results) <- c("method", "nsnp","b","se","pval","exp","F_stat")
     
   }
     
     
 
-  univ_results$F_stat <- c(f_1,f_2)
+  
   return(univ_results)
 }
 
@@ -196,7 +183,7 @@ run_mvmr <- function(MR_dat, dat, setup_mode){
   
   MR_dat <- MR_dat[(MR_dat$X1_p < 5e-8) | (MR_dat$X2_p < 5e-8) ,]
   
-  if (length(MR_dat) >= 1) {
+  if (nrow(MR_dat) >= 2) {
     
     n_x1 <- sum(MR_dat$X1_p < 5e-8)
     n_x2 <- sum(MR_dat$X2_p < 5e-8)
@@ -232,7 +219,7 @@ run_mvmr <- function(MR_dat, dat, setup_mode){
     res_mvmr$nsnp <- c(0, 0)   
     res_mvmr <- res_mvmr[,c(4,6,1,2,3,5)]
     colnames(res_mvmr) <- c("method","nsnp","b","se","pval","exp")
-    res_mvmr$F_stat <- c(strength$exposure1, strength$exposure2)
+    res_mvmr$F_stat <- c(NA, NA)
   
     
     }

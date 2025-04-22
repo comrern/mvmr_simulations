@@ -1,5 +1,5 @@
 
-setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/effect_size_sims/")
+setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/ld_var/")
 
 
 files <- list.files(pattern = "^results_.*\\.csv$", full.names = TRUE)

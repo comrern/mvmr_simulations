@@ -21,7 +21,7 @@ library(tidyverse)
 source('modes_sims.R')
 source('functions_sims.R')
 
-reps = 500
+reps = 5
 results = data.frame()
 results_all = NULL
 results_ivw = NULL
@@ -29,11 +29,11 @@ results_out = NULL
 mvmrres <- NULL
 
 results_all = data.frame()
-results_ivw = data.frame()
 
 for (setup_mode in c(1,2,3,4)){
   results_models <- data.frame()
-  for (model in c("A","B","C","D"))  {
+
+  for (model in c("B","D"))  {
   results_rep = data.frame()
   run=0
       for(j in 1:reps){  
@@ -51,7 +51,7 @@ for (setup_mode in c(1,2,3,4)){
             ld_mag=params[10]
 
             
-            dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C,  LD_mod, ld_mag)
+            dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi,  LD_mod, ld_mag)
               #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
           #### 
           

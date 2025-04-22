@@ -1,14 +1,12 @@
 setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/")
 
-results <- read.table("./results_full_sims.csv")
-
 
 source('../modes_sims.R')
 source('../functions_sims.R')
 
 
 
-results <- read.table("./effect_size_sims/results_efect_size_sims.csv")
+results <- read.table("./ld_var/results_efect_size_sims.csv")
 
 
 reps= 4000
@@ -20,7 +18,7 @@ reps= 4000
     rep_res <- data.frame()
     single_model_res <- results[results$setup_mode == setup_mode,]
     
-    for (model in c("A","B","C","D") ){
+    for (model in c("B","D") ){
       
       params <- setup(setup_mode, model)
       b1 = params[4]
@@ -36,16 +34,16 @@ reps= 4000
       results_mode <-single_model_res[single_model_res$mode == model,]
       
       row_res$b     <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1,]$b)
-                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b)
-                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b))
+                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b, na.rm = T)
+                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b, na.rm = T))
       
-      row_res$se    <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$se)
-                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$se)
-                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$se))
+      row_res$se    <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$se, na.rm = T)
+                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$se, na.rm = T)
+                            , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$se, na.rm = T))
       
-      row_res$sig   <- list(sum(ifelse(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$p < 0.05,1,0))
-                            , sum(ifelse(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$p < 0.05,1,0))
-                            , sum(ifelse(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$p < 0.05,1,0)))
+      row_res$sig   <- list(sum(ifelse(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$p < 0.05,1,0), na.rm = T)
+                            , sum(ifelse(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$p < 0.05,1,0), na.rm = T)
+                            , sum(ifelse(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$p < 0.05,1,0), na.rm = T))
       
       ## calculate coverage
       
@@ -57,24 +55,28 @@ reps= 4000
       b2_v <- rep(b2, time=nrow(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]))
       b1_vmvmr <- rep(b1, time=nrow(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]))
       
-      row_res$cov_b <- list(sum(between(b1_v, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$uci))
-                            , sum(between(b1_vmvmr, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$uci))
-                            ,  sum(between(b2_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$uci)))
+      row_res$cov_b <- list(sum(between(b1_v, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$uci), na.rm = T)
+                            , sum(between(b1_vmvmr, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$uci), na.rm = T)
+                            ,  sum(between(b2_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$uci), na.rm = T))
       
       
 
       
-      row_res$bias   <- list(mean(abs(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v))
-                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_vmvmr))
-                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v)))
+      row_res$bias   <- list(mean(abs(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v), na.rm = T)
+                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_vmvmr), na.rm = T)
+                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v), na.rm = T))
       
-      row_res$F_stat <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$F_stat)
-                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$F_stat))
-                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$F_stat)))
+      row_res$F_stat <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$F_stat, na.rm = T)
+                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$F_stat), na.rm = T)
+                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$F_stat), na.rm = T))
       
       row_res$nsnp <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$nsnp, na.rm = T)
                              , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$nsnp), na.rm = T)
                              , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$nsnp), na.rm = T))
+      
+      row_res$mse <- list(mean((results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1,]$b - b1_v)^2 , na.rm = T),
+                          mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1,]$b - b1_vmvmr)^2, na.rm = T),
+                          mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2,]$b - b2_v)^2, na.rm = T))
       
       rep_res <- rbind(rep_res, row_res)
     }
@@ -83,11 +85,11 @@ reps= 4000
   }  
   
   avg_res <- avg_res %>%
-    mutate(across(c(b, se, cov_b, sig, bias, F_stat, nsnp), as.numeric))  # Replace with actual column names
+    mutate(across(c(b, se, cov_b, sig, bias, F_stat, nsnp, mse), as.numeric))  # Replace with actual column names
   
   avg_res$cov_p <- (avg_res$cov_b/ reps)*100
   
-  View(avg_res[avg_res$exposure ==1,])
+  View(avg_res[avg_res$exposure ==1 & avg_res$method=="MVMR",])
   
   # write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/effect_size_sims/avergaed_effect_size.csv")
  
