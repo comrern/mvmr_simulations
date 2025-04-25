@@ -1,7 +1,7 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, LD_mod){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, setup_mode){
   
   n=2*ss
   
@@ -36,13 +36,6 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, LD_mod){
   G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
   
   G2 <- cbind(G_inc, G_dec, G_cont)
-  
-  
-  
-  
-  if(LD_mod==T){
-    G <- matrix(rbinom(n*nsnps, 2, 0.4), n, nsnps)
-  }
 
   G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
   
@@ -66,7 +59,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, LD_mod){
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
   
   ### Model LD
-  if(LD_mod==T){
+  if(setup_mode==2){
     LD_inc <- 0.5 + (df[,"X2"])
     LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
     
@@ -84,13 +77,17 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, LD_mod){
     
     df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df[,"X2"] + betaC*df[,"C"] + v_x1
     
-  }
-  
-  if(LD_mod==F){
+  } else {
     df[,"X1"] <- G[,]%*%effs_x1 + xi*df[,"X2"] + betaC*df[,"C"] + v_x1
   }
   
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
+  
+  ## measurement error for X2
+  if (setup_mode == 4) {
+    v_x2 <- rnorm(n,0,1)
+    df[,"X2_me"] <- df["X2"] + v_x2
+  }
   
   
   data <- df
@@ -99,7 +96,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, LD_mod){
 
 
 
-GWASres <- function(dat){
+GWASres <- function(dat, setup_mode){
   MR_dat = data.frame()
   
   dat.1 <- dat[1:nobs,]
@@ -113,11 +110,24 @@ GWASres <- function(dat){
     MR_dat[i,"X1_se"] <- a$coefficient[2,2]
     MR_dat[i,"X1_p"] <- a$coefficient[2,4]
     MR_dat[i,"X1_r2"] <- a$r.squared
-    b <- summary(lm(dat.1$X2~dat.1[,i]))
-    MR_dat[i,"X2_b"] <- b$coefficient[2,1]
-    MR_dat[i,"X2_se"] <- b$coefficient[2,2]
-    MR_dat[i,"X2_p"] <- b$coefficient[2,4]
-    MR_dat[i,"X2_r2"] <- b$r.squared
+    
+    if (setup_mode == 4) {
+      b <- summary(lm(dat.1$X2_me~dat.1[,i]))
+      MR_dat[i,"X2_b"] <- b$coefficient[2,1]
+      MR_dat[i,"X2_se"] <- b$coefficient[2,2]
+      MR_dat[i,"X2_p"] <- b$coefficient[2,4]
+      MR_dat[i,"X2_r2"] <- b$r.squared
+    } else {
+      
+      b <- summary(lm(dat.1$X2~dat.1[,i]))
+      MR_dat[i,"X2_b"] <- b$coefficient[2,1]
+      MR_dat[i,"X2_se"] <- b$coefficient[2,2]
+      MR_dat[i,"X2_p"] <- b$coefficient[2,4]
+      MR_dat[i,"X2_r2"] <- b$r.squared
+      
+    }
+    
+    
     c<-summary(lm(dat.2$Y~dat.2[,i]))
     MR_dat[i,"Y_b"] <- c$coefficient[2,1]
     MR_dat[i,"Y_se"] <-c$coefficient[2,2]

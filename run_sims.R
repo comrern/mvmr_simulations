@@ -47,11 +47,10 @@ for (setup_mode in c(1,2,3,4)){
             b2 = params[5]
             betaC=params[6]
             beta2C=params[7]
-            LD_mod=params[9]
             xi=params[8]
             
             
-            dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, LD_mod)
+            dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, setup_mode)
               #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
           #### 
           
@@ -59,7 +58,7 @@ for (setup_mode in c(1,2,3,4)){
             results[1,"pi"] <- pi
             results[1,"sample.size"] <- nobs
 
-            MR_dat <- GWASres(dat)
+            MR_dat <- GWASres(dat, setup_mode)
           
           #### Univariate two sample MR ####
             
@@ -89,7 +88,7 @@ for (setup_mode in c(1,2,3,4)){
 
 ## save individual outputs for troubleshooting
 
-save(results_all, file=sprintf(paste0(output_path, "/results_%s.csv"), job_id))
+save(results_all, file=sprintf(paste0(output_path, "/test_results_%s.csv"), job_id))
 
 
  
