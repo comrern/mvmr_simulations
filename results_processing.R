@@ -90,5 +90,5 @@ reps= 1000
   
   View(avg_res[avg_res$exposure ==1,])
   
-  # write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avergaed_results_fullsims.csv")
+write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avergaed_results_fullsims.csv")
  
