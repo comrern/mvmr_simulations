@@ -11,10 +11,10 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, setup_mode){
   df$V1 <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
-  prob_inc <-  0.3 + (0.1 * df$X2)  ## build probability vector based on value of X2 --> 
+  prob_inc <-  0.3 + (0.2 * df$X2)  ## build probability vector based on value of X2 --> 
   ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
   
-  prob_dec <-  0.4 - (0.1 * df$X2)
+  prob_dec <-  0.4 - (0.2 * df$X2)
   
   prob_inc_g <- rep(prob_inc, times = nsnps/3)
   prob_dec_g <- rep(prob_dec, times = nsnps/3)
@@ -60,20 +60,16 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, setup_mode){
   
   ### Model LD
   if(setup_mode==2){
-    LD_inc <- 0.5 + (df[,"X2"])
+    LD_inc <- 0.5 + 0.5 * (df[,"X2"])
     LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
     
-    LD_dec <- 1 - (df[,"X2"])
+    LD_dec <- 1 - 0.5 * (df[,"X2"])
     LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
-    
-    
+
     LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
-    LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):(2*(nsnps/3))], function(y_val) LD_dec * y_val)
-    
-    LD_const_mat  <- sapply(effs_x1[(2*(nsnps/3)+1):nsnps], function(y_val)  rep(1, nrow(df)) * y_val)
-    
-    
-    effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
+    LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):nsnps], function(y_val) LD_dec * y_val)
+  
+    effs_mat <- cbind(LD_inc_mat, LD_dec_mat)
     
     df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df[,"X2"] + betaC*df[,"C"] + v_x1
     
