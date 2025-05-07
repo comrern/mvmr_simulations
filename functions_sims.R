@@ -12,10 +12,10 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c){
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
 
-    prob_inc <-  0.3 + 0.1 * df$X2  ## build probability vector based on value of X2 --> 
+    prob_inc <-  0.3 + 0.2 * df$X2  ## build probability vector based on value of X2 --> 
     ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
     
-    prob_dec <-  0.4 - 0.1 * df$X2
+    prob_dec <-  0.4 - 0.2 * df$X2
     
     prob_inc_g <- rep(prob_inc, times = nsnps/3)
     prob_dec_g <- rep(prob_dec, times = nsnps/3)
@@ -44,7 +44,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(nsnps,0,0.08))
+  effs_x1 <- abs(rnorm(nsnps,0.05,0.05))
   
   
   df <- (cbind(df, G, G2))
