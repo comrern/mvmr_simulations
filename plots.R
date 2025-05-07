@@ -1,13 +1,13 @@
 library(ggplot2)
 library(TwoSampleMR)
 
-data <- read.table("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/effect_size_sims/avergaed_effect_size.csv")
+data <- read.table("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/ld_var_averaged_sims.csv", header=T)
 
 data <- cbind.data.frame(data, (data$b - (1.96 * data$se)),((data$b + (1.96 * data$se)))) 
 
 # data <- data[!(data$exposure==2),]
 
-colnames(data)[13:14] <- c("lci","uci")
+colnames(data)[14:15] <- c("lci","uci")
 
 data$key <- paste0(data$model,"-", data$method ,"-",data$exposure)
 
@@ -38,7 +38,7 @@ for (mode in c(1,2,3,4)){
 
 ##### plot increasing effect size for model B
 
-for (model in c("A","B","C","D")) {
+for (model in c("B","D")) {
 
     data_eff_size_plot <- data[data$model == model & data$exposure == "1" & data$method == "MVMR",]
     
@@ -47,7 +47,7 @@ for (model in c("A","B","C","D")) {
       geom_errorbar(aes(ymin = lci, ymax = uci), width = 0.2) +  # CI bars
       geom_hline(yintercept = 0.4, linetype = "dashed", color = "red") +  # intercept line
       scale_x_continuous(breaks = 1:4) +
-      labs(x = "setup mode", y = "Effect size (beta)", title = paste("MVMR causal effect estimate for exposure 1 with increasing effect size of SNPs on expousre 1 with model", model)) +
+      labs(x = "setup mode", y = "Effect size (beta)", title = paste("MVMR causal effect estimate for exposure 1 with increasing effect size variance of SNPs on expousre 1 with model", model)) +
       geom_hline(yintercept = 0) +
       theme_minimal())
     

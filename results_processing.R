@@ -9,7 +9,7 @@ source('../functions_sims.R')
 results <- read.table("./ld_var/results_efect_size_sims.csv")
 
 
-reps= 4000
+reps= 5000
   ## test params:
   # results <- results_all
   avg_res <- data.frame()
@@ -33,7 +33,7 @@ reps= 4000
       
       results_mode <-single_model_res[single_model_res$mode == model,]
       
-      row_res$b     <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1,]$b)
+      row_res$b     <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1,]$b,na.rm=T)
                             , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b, na.rm = T)
                             , mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b, na.rm = T))
       
@@ -62,9 +62,9 @@ reps= 4000
       
 
       
-      row_res$bias   <- list(mean(abs(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v), na.rm = T)
-                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_vmvmr), na.rm = T)
-                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v), na.rm = T))
+      row_res$bias   <- list(mean((results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v), na.rm = T)
+                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_vmvmr), na.rm = T)
+                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v), na.rm = T))
       
       row_res$F_stat <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$F_stat, na.rm = T)
                              , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$F_stat), na.rm = T)
@@ -91,5 +91,4 @@ reps= 4000
   
   View(avg_res[avg_res$exposure ==1 & avg_res$method=="MVMR",])
   
-  # write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/effect_size_sims/avergaed_effect_size.csv")
- 
+  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/ld_var_averaged_sims.csv", row.names=F, quote=F)
