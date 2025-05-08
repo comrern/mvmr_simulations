@@ -5,7 +5,7 @@ results <- results[!is.na(results$se),]
 
 source('../modes_sims.R')
 source('../functions_sims.R')
-reps= 1000
+reps= 10000
   ## test params:
   # results <- results_all
   avg_res <- data.frame()
@@ -58,9 +58,9 @@ reps= 1000
       
       
       
-      row_res$bias   <- list(mean(abs(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v), na.rm = T)
-                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_vmvmr), na.rm = T)
-                             , mean(abs(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v), na.rm = T))
+      row_res$bias   <- list(mean((results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v), na.rm = T)
+                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_vmvmr), na.rm = T)
+                             , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v), na.rm = T))
       
       row_res$F_stat <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$F_stat, na.rm = T)
                              , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$F_stat), na.rm = T)

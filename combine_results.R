@@ -2,7 +2,7 @@
 setwd("C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/raw")
 
 
-files <- list.files(pattern = "^results_.*\\.csv$", full.names = TRUE)
+files <- list.files(pattern = "^test_results_.*\\.csv$", full.names = TRUE)
 
 data_list <- lapply(files, function(f) {
   env <- new.env()
