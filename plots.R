@@ -17,18 +17,26 @@ for (mode in c("TRUE","FALSE")){
   
   mode_dat <- data[data$LD_mod == mode,]
   
-  combined_plot <- ggplot(mode_dat, aes(y=(key), x=(b),xmin=(lo_ci), xmax=(up_ci),group=model))
   
+  # Create a dataframe to hold vertical lines for Models B and D
+  vline_data <- data.frame(
+    xintercept = 0.4,
+    model = c("B", "D")
+  )
   
-  print(combined_plot + geom_point() +
-    xlab("beta") + 
+  combined_plot <- ggplot(mode_dat, aes(y = key, x = b, xmin = lo_ci, xmax = up_ci, group = model)) +
+    geom_point() +
+    xlab("Beta") + 
     theme_bw() +
-    geom_errorbarh(height=.1) +
-    geom_vline(xintercept=0) +
-    scale_y_discrete(drop=T, labels=data$labels) +  
-    facet_wrap(~ model, scale= "free_y") +
-    theme(legend.position="none"))
-   
+    geom_errorbarh(height = 0.1) +
+    geom_vline(xintercept = 0) +
+    geom_vline(data = vline_data, aes(xintercept = xintercept), 
+               linetype = "dashed", color = "red") +
+    scale_y_discrete(drop = TRUE, labels = data$labels) +  
+    facet_wrap(~ model, scales = "free_y") +
+    ggtitle(paste("Setup mode", mode)) +
+    theme(legend.position = "none")
   
+  print(combined_plot)
 }
 
