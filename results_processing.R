@@ -6,7 +6,7 @@ source('../functions_sims.R')
 
 
 
-results <- read.table("./ld_var/results_efect_size_sims.csv")
+results <- read.table("./ld_var/ld_var_averaged.csv")
 
 
 reps= 5000

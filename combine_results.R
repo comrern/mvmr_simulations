@@ -14,4 +14,4 @@ data_list <- lapply(files, function(f) {
 final_data <- do.call(rbind, data_list)  # Merge all into one data frame
 
 
-write.table(final_data, "./results_efect_size_sims.csv")
+write.table(final_data, "./ld_var_averaged.csv")
