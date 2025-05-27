@@ -71,7 +71,10 @@ reps= 5000
       row_res$mse <- list(mean((results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1,]$b - b1_v)^2, na.rm=T),
                           mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1,]$b - b1_vmvmr)^2, na.rm=T),
                           mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2,]$b - b2_v)^2, na.rm=T))
-      
+   
+         row_res$nsnp <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$nsnp, na.rm = T)
+                           , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$nsnp), na.rm = T)
+                           , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$nsnp), na.rm = T))
       
       rep_res <- rbind(rep_res, row_res)
       
@@ -84,7 +87,7 @@ reps= 5000
   
   
   avg_res <- avg_res %>%
-    mutate(across(c(b, se, cov_b, sig, bias, F_stat, mse), as.numeric))  # Replace with actual column names
+    mutate(across(c(b, se, cov_b, sig, bias, F_stat, nsnp, mse), as.numeric))  # Replace with actual column names
   
   avg_res$cov_p <- (avg_res$cov_b/ reps)*100
   
