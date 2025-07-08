@@ -35,8 +35,9 @@ setup <- function(m,k){
   xi = ifelse(m==3, 1, 0)
   snps=33
   nobs = 25000
-  betaC = 0.8
-  beta2C = 0.8
+  betaC <- ifelse(k=="D" | k == "C", 0,  0.8)
+  beta2C <- ifelse(k=="D" | k == "C",  0,  0.8)
+
 
   
   return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi))

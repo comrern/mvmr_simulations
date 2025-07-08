@@ -21,7 +21,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 500 
+reps = 2 
 run = 0
 results = data.frame()
 results_all = NULL
@@ -31,11 +31,21 @@ mvmrres <- NULL
 
 results_ivw = data.frame()
 
+## LD mod settings;
 
-for (LD_mod in c(TRUE,FALSE)){
+  # 1: LD varies for outcome, but exposure assoc do not vary by ancestry- replicates use of external (e.g Euro) exposure data
+  # 2: LD varies equally for exposure and outcome- but is equal for both- represents two sample MR in an admixed population where exposure and outcome share ancestry
+  # 3: LD varies for exposure and outcome, but these samples are from separate strata of the population. 
+
+
+
+
+
+for (LD_mod in c(1,2,3)){
   results_models <- data.frame()
 
       for (model in c("A","B","C","D"))  {
+        model = "D"
     results_rep = data.frame()
     run=0
     for(j in 1:reps){  
@@ -64,11 +74,6 @@ for (LD_mod in c(TRUE,FALSE)){
       
       ####Regression check######
       
-      ols <- summary(lm(Y ~ X1, data = dat))
-      
-      results[1,"ols_b"] <- ols$coefficients["X1","Estimate"]
-      results[1,"ols_se"] <- ols$coefficients["X1","Std. Error"]
-      
       ## allele freq
       
       MR_dat <- GWASres(dat, LD_mod)
@@ -79,10 +84,11 @@ for (LD_mod in c(TRUE,FALSE)){
       
       ### MVMR
       
-      mvmr_res <- run_mvmr(MR_dat, dat, LD_mod)
+      # mvmr_res <- run_mvmr(MR_dat, dat, LD_mod)
       
       ## format results
-      res_run <- rbind(univariate_results, mvmr_res)
+      # res_run <- rbind(univariate_results, mvmr_res)
+      res_run <- univariate_results
       res_run$run <- j
       res_run$mode <- model
       
@@ -99,7 +105,7 @@ for (LD_mod in c(TRUE,FALSE)){
   results_all <- rbind(results_all, results_models)
 }
 
-save(results_all, file=sprintf(paste0(output_path, "/results_%s.rda"), job_id))
+# save(results_all, file=sprintf(paste0(output_path, "/results_%s.rda"), job_id))
 
 
 # write.csv(results_averaged, "./results//results_averaged.csv")

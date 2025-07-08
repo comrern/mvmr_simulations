@@ -5,29 +5,30 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c){
   
   n=2*ss
   
-  ## debug code ##      n=25000     nsnps=33     snpsc=33      beta1=0    beta2=0.4   betaC=0.5  beta2C=0.6  pi=0.5
+  ## debug code ##      n=50000     nsnps=33     snpsc=33      beta1=0.4    beta2=0.4   betaC=0.5  beta2C=0.6  pi=0.5
   
   df <- as.data.frame(matrix(nrow=n))
   df$V1 <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
 
-    prob_inc <-  0.3 + 0.2 * df$X2  ## build probability vector based on value of X2 --> 
-    ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
-    
-    prob_dec <-  0.4 - 0.2 * df$X2
-    
-    prob_inc_g <- rep(prob_inc, times = nsnps/3)
-    prob_dec_g <- rep(prob_dec, times = nsnps/3)
-    
-    G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, (nsnps/3))
-    G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
-    G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
-    
-    G <- cbind(G_inc, G_dec, G_cont)
+    # prob_inc <-  0.3 + 0.2 * df$X2  ## build probability vector based on value of X2 --> 
+    # ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
+    # 
+    # prob_dec <-  0.4 - 0.2 * df$X2
+    # 
+    # prob_inc_g <- rep(prob_inc, times = nsnps/3)
+    # prob_dec_g <- rep(prob_dec, times = nsnps/3)
+    # 
+    # G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, (nsnps/3))
+    # G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
+    # G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
+    # 
+    # G <- cbind(G_inc, G_dec, G_cont)
     
   
-
+  G <- matrix(rbinom(n*nsnps, 2, 0.4), n, nsnps)
+  
   G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
   
   
@@ -44,30 +45,21 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(nsnps,0.05,0.05))
+  effs_x1 <- abs(rnorm(nsnps,0.01,0.05))
   
   
   df <- (cbind(df, G, G2))
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
   
   # model LD
-  LD_inc <- 0.5 + 0.5 *(df[,"X2"])
-  LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
   
-  LD_dec <- 1 - 0.5 * (df[,"X2"])
-  LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
+  LD_dec <- 1 - (0.6 * df[,"X2"])
+  LD_dec <- ifelse(LD_dec < 0,0.1 , LD_dec)
   
-  LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
-  LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):(2*(nsnps/3))], function(y_val) LD_dec * y_val)
   
-  LD_const_mat  <- sapply(effs_x1[(2*(nsnps/3)+1):nsnps], function(y_val)  rep(1, nrow(df)) * y_val)
+  df[,"X1"] <- as.vector((G %*% effs_x1) * LD_dec) + betaC*df[,"C"] + v_x1
   
-
-  effs_mat <- cbind(LD_inc_mat, LD_dec_mat, LD_const_mat)
-  
-  df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
-  
-  df[,"X1_novar"] <- G[,]%*%effs_x1 + xi*df["X2"] + betaC*df[,"C"] + v_x1  
+  df[,"X1_novar"] <- G[,]%*%effs_x1 + betaC*df[,"C"] + v_x1  
   
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
@@ -80,6 +72,12 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c){
 
 GWASres <- function(dat, LD_mod){
   MR_dat = data.frame()
+  
+  ### Determine sample splitting based on LD_mod
+  
+  if (LD_mod ==3){
+    dat <- dat[order(dat$X2), ]
+  } 
   
   dat.1 <- dat[1:nobs,]
   dat.2 <- dat[(nobs+1):(2*nobs),]
@@ -105,13 +103,13 @@ GWASres <- function(dat, LD_mod){
     MR_dat[i,"x_novar_b"] <- d$coefficient[2,1]
     MR_dat[i,"x_novar_se"] <-d$coefficient[2,2]
     MR_dat[i,"x_novar_p"] <- d$coefficient[2,4]
-    
-    if (LD_mod==T) {
+
+    if (LD_mod==1) {
       MR_dat[i,"X1_b"] <- d$coefficient[2,1]
       MR_dat[i,"X1_se"] <- d$coefficient[2,2]
       MR_dat[i,"X1_p"] <- d$coefficient[2,4]
 
-      
+
        }
     
     
@@ -163,7 +161,7 @@ univariate_MR <- function(MR_dat, LD_mod){
   dat1 <- harmonise_data(exp1, out)
   dat2 <- harmonise_data(exp2, out)
   
-  if (LD_mod==FALSE) {
+  if (LD_mod==2) {
     
     dat1 <- dat1[dat1$SNP %in% MR_dat[MR_dat$x_novar_p < 5e-8,]$id,]
     
@@ -189,7 +187,7 @@ univariate_MR <- function(MR_dat, LD_mod){
 
 run_mvmr <- function(MR_dat, dat, LD_mod){
  
- if (LD_mod==FALSE) {
+ if (LD_mod==2) {
     
      MR_dat <- MR_dat[(MR_dat$id %in% MR_dat[MR_dat$x_novar_p < 5e-8,]$id) | (MR_dat$X2_p < 5e-8),]
     

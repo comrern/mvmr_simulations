@@ -11,7 +11,7 @@ reps= 5000
   avg_res <- data.frame()
   
   mode_res <- data.frame()
-  for (LD_mod in c(TRUE,FALSE)){
+  for (LD_mod in c(1,2,3)){
     rep_res <- data.frame()
     single_model_res <- results[results$setup_mode == LD_mod,]
     
@@ -93,5 +93,5 @@ reps= 5000
   
   View(avg_res[avg_res$exposure ==1,])
   
-  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avg_test_ld_exp.csv")
+  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/TEST_FOR_MEETING_LD_EXP_05.txt")
  
