@@ -50,12 +50,11 @@ results_ivw = data.frame()
             b2 = params[5]
             betaC=params[6]
             beta2C=params[7]
-            LD_mod=params[10]
-            pi = params[8]
-            xi=params[9]
+            LD_mod=params[9]
+            xi=params[8]
             
             
-            dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, pi, LD_mod)
+            dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, LD_mod)
               #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
           #### 
           

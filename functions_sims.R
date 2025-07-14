@@ -1,31 +1,40 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
+
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, LD_mod){
   
   n=2*ss
   
   ## debug code ##      n=25000     nsnps=28    snpsc=28   xi=0   beta1=0    beta2=0.4   betaC=0.5  beta2C=0.6  pi=0.5
   
   df <- as.data.frame(matrix(nrow=n))
-  df$V1 <- seq.int(nrow(df))
+  df$ID <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   df <- df[order(df$X2), ]
   
+  
+  
+  
+  
   obs_af <- read.table("../ld_reports/af_subset", header=T)
+  obs_af <- sample_n(obs_af, 28)
   
   # rep allele freqs to feed into binom 
   G <- data.frame(matrix(NA, nrow = nsnps, ncol = n))
   
   for (snp in 1:nrow(obs_af)){
     
-    snp_af <- unlist(rep((obs_af[snp,]), each=(n/4)))
-    G[snp, ] <- rbinom(n, 2, (snp_af))
+    af_vals <- as.numeric(obs_af[snp, ])  # Assuming columns are p1 to p4
+    snp_af <- rep(af_vals, each = n / 4)
+    G[snp, ] <- rbinom(n, 2, snp_af)
     
   }
   
-  G <- as.data.frame(t(G))
+  G <- as.matrix(t(G))
   G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
+  
+  
   
   means <- c(0, 0)                                   
   cov_matrix <- matrix(c(1, 0, 0, 1),
@@ -40,7 +49,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(28,0,0.5))
+  effs_x1 <- abs(rnorm(28,0,0.1))
   
   
   df <- (cbind(df, G, G2))
@@ -49,23 +58,38 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
   ### Model LD
 
   ## read observed LD variance 
-  obs_ld_dat <- read.table("../ld_reports/test_ld_mat.txt", header=T)
+  # obs_ld_dat <- read.table("../ld_reports/random_subset_matrix", header=T)
+  # 
+  # effs_ld_1 <- effs_x1 * obs_ld_dat$R2_p1
+  # effs_ld_2 <- effs_x1 * obs_ld_dat$R2_p2
+  # effs_ld_3 <- effs_x1 * obs_ld_dat$R2_p3
+  # effs_ld_4 <- effs_x1 * obs_ld_dat$R2_p4
+  # # 
+  # # ld1_mat <- matrix(rep(effs_ld_1, each = n/4), nrow = length(effs_ld_1), ncol = n/4)
+  # # ld2_mat <- matrix(rep(effs_ld_2, each = n/4), nrow = length(effs_ld_2), ncol = n/4)
+  # # ld3_mat <- matrix(rep(effs_ld_3, each = n/4), nrow = length(effs_ld_3), ncol = n/4)
+  # # ld4_mat <- matrix(rep(effs_ld_4, each = n/4), nrow = length(effs_ld_4), ncol = n/4)
+  # # 
+  # # effs_mat <- t(cbind(ld1_mat, ld2_mat, ld3_mat, ld4_mat))#
+  # 
+  # n_per_group <- n / 4
+  # 
+  # # Combine the 4 R²-weighted effect vectors into a matrix (nsnps × 4)
+  # ld_weights <- cbind(effs_ld_1, effs_ld_2, effs_ld_3, effs_ld_4)  # shape: nsnps × 4
+  # 
+  # # Now create an n × nsnps matrix by repeating each row of ld_weights for each group
+  # effs_mat <- matrix(NA, nrow = n, ncol = nsnps)
+  # 
+  # for (g in 1:4) {
+  #   idx <- ((g - 1) * n_per_group + 1):(g * n_per_group)
+  #   effs_mat[idx, ] <- matrix(rep(ld_weights[, g], each = n_per_group), 
+  #                             nrow = n_per_group, byrow = FALSE)
+  # }
   
-  effs_ld_1 <- effs_x1 * obs_ld_dat$R2_p1
-  effs_ld_2 <- effs_x1 * obs_ld_dat$R2_p2
-  effs_ld_3 <- effs_x1 * obs_ld_dat$R2_p3
-  effs_ld_4 <- effs_x1 * obs_ld_dat$R2_p4
   
-  ld1_mat <- matrix(rep(effs_ld_1, each = n/4), nrow = length(effs_ld_1), ncol = n/4)
-  ld2_mat <- matrix(rep(effs_ld_2, each = n/4), nrow = length(effs_ld_2), ncol = n/4)
-  ld3_mat <- matrix(rep(effs_ld_3, each = n/4), nrow = length(effs_ld_3), ncol = n/4)
-  ld4_mat <- matrix(rep(effs_ld_4, each = n/4), nrow = length(effs_ld_4), ncol = n/4)
+  # df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
   
-  effs_mat <- t(cbind(ld1_mat, ld2_mat, ld3_mat, ld4_mat))
-  
-  df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
-  
-  
+  df[,"X1"] <- G[,]%*%effs_x1 + betaC*df[,"C"] + v_x1  
 
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
@@ -78,24 +102,24 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, pi, LD_mod){
 
 GWASres <- function(dat){
   MR_dat = data.frame()
-  
+  dat <- dat[order(dat$ID), ]
   dat.1 <- dat[1:nobs,]
   dat.2 <- dat[(nobs+1):(2*nobs),]
   
   est.snps <- snps + snpsc
   
   for(i in 1:est.snps){
-    a <- summary(lm(dat.1$X1~dat.1[,i]))
+    a <- summary(lm(dat.1$X1~dat.1[,i + 3]))
     MR_dat[i,"X1_b"] <- a$coefficient[2,1]
     MR_dat[i,"X1_se"] <- a$coefficient[2,2]
     MR_dat[i,"X1_p"] <- a$coefficient[2,4]
     MR_dat[i,"X1_r2"] <- a$r.squared
-    b <- summary(lm(dat.1$X2~dat.1[,i]))
+    b <- summary(lm(dat.1$X2~dat.1[,i+ 3]))
     MR_dat[i,"X2_b"] <- b$coefficient[2,1]
     MR_dat[i,"X2_se"] <- b$coefficient[2,2]
     MR_dat[i,"X2_p"] <- b$coefficient[2,4]
     MR_dat[i,"X2_r2"] <- b$r.squared
-    c<-summary(lm(dat.2$Y~dat.2[,i]))
+    c<-summary(lm(dat.2$Y~dat.2[,i+ 3]))
     MR_dat[i,"Y_b"] <- c$coefficient[2,1]
     MR_dat[i,"Y_se"] <-c$coefficient[2,2]
     MR_dat[i,"Y_p"] <- c$coefficient[2,4]
@@ -103,7 +127,7 @@ GWASres <- function(dat){
 
     
   }
-  
+
   allele_frequencies <- colSums(dat[,3:(snps + snpsc + 2)]) / (2 * nrow(dat))
   MR_dat$af <- allele_frequencies
   MR_dat$id <- seq.int(nrow(MR_dat))
@@ -123,14 +147,14 @@ univariate_MR <- function(MR_dat){
                       effect_allele_col = "EA"
   )
   
-  exp2 <- format_data(MR_dat, type="exposure",
-                      snp_col="id",
-                      beta_col="X2_b",
-                      se_col="X2_se",
-                      eaf_col="af",
-                      pval_col="X1_p",
-                      effect_allele_col = "EA"
-  )
+  # exp2 <- format_data(MR_dat, type="exposure",
+  #                     snp_col="id",
+  #                     beta_col="X2_b",
+  #                     se_col="X2_se",
+  #                     eaf_col="af",
+  #                     pval_col="X1_p",
+  #                     effect_allele_col = "EA"
+  # )
   
   out <- format_data(MR_dat, type="outcome",
                      snp_col="id",
@@ -142,22 +166,22 @@ univariate_MR <- function(MR_dat){
   )
   
   dat1 <- harmonise_data(exp1, out)
-  dat2 <- harmonise_data(exp2, out)
+  # dat2 <- harmonise_data(exp2, out)
   
-  dat1_temp <- dat1[dat1$pval.exposure <= 5e-8,]
-  dat2 <- dat2[dat2$pval.exposure <= 5e-8,]
+  # dat1_temp <- dat1[dat1$pval.exposure <= 5e-8,]
+  # dat2 <- dat2[dat2$pval.exposure <= 5e-8,]
   
-  if (length(dat1_temp$SNP) == 0 | length(dat2$SNP) == 0) {
-    print("No significant SNPs for exposure(s), reducing significance threshold")
-    dat1_temp  <- dat1[dat1$pval.exposure <= 5e-7,]
-    }
-  if ((length(dat1_temp$SNP) < 3 | length(dat2$SNP) < 3) & (length(dat1_temp$SNP) == 0 | length(dat2$SNP))) {
-    print("Too few SNPs for MR, reducing significance threshold")
-    dat1_temp  <- dat1[dat1$pval.exposure <= 5e-7,]
-    
-    }
+  # if (length(dat1_temp$SNP) == 0 | length(dat2$SNP) == 0) {
+  #   print("No significant SNPs for exposure(s), reducing significance threshold")
+  #   dat1_temp  <- dat1[dat1$pval.exposure <= 5e-7,]
+  #   }
+  # if ((length(dat1_temp$SNP) < 3 | length(dat2$SNP) < 3) & (length(dat1_temp$SNP) == 0 | length(dat2$SNP))) {
+  #   print("Too few SNPs for MR, reducing significance threshold")
+  #   dat1_temp  <- dat1[dat1$pval.exposure <= 5e-7,]
+  #   
+  #   }
   
-  mr1 <- mr(dat1_temp)
+  mr1 <- mr(dat1)
 
   mr1$exp <- 1
 

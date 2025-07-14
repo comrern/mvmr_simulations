@@ -59,7 +59,7 @@ avg_res <- data.frame()
                                 , abs(mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v)))
     
     row_res$MSE   <- list(mean((results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v)^2)
-                          , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_vmvmr)^2)
+                          , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_v)^2)
                           , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$b - b2_v)^2))
     
     
@@ -74,7 +74,7 @@ avg_res <- data.frame()
   
 avg_res$cov_p <- (avg_res$cov_b/ reps)*100
 
-
+View(avg_res[avg_res$exposure == 1,])
   
   # write.table(avg_res, "/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/real_data_10k.csv")
   
