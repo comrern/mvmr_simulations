@@ -4,22 +4,27 @@ setup <- function(m,k){
   
   if(k=='A'){    ## No b1 effect, all obs due to b2
 
-    b1 = 0
-    b2 = 0.8
+    b1 = 0.4
+    b2 = 0
+    LD_mag = 0
 
   }
 
   if(k=='B'){    ## b1 and b2 effect, b2 modifies magnitude of ce
 
     b1 = 0.4
-    b2 = 0.8
+    b2 = 0
+    LD_mag = 0.25
+    
 
   }
   
   if(k=='C'){    ## No b1 or b2 effect
     
-    b1 = 0
+    b1 = 0.4
     b2 = 0
+    LD_mag = 0.5
+    
 
   }
   
@@ -27,7 +32,8 @@ setup <- function(m,k){
     
     b1 = 0.4
     b2 = 0
-
+    LD_mag = 0.75
+    
   }
   
   
@@ -35,10 +41,10 @@ setup <- function(m,k){
   xi = ifelse(m==3, 1, 0)
   snps=33
   nobs = 25000
-  betaC <- ifelse(k=="D" | k == "C", 0,  0.8)
-  beta2C <- ifelse(k=="D" | k == "C",  0,  0.8)
+  betaC <- 0
+  beta2C <- 0
 
 
   
-  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi))
+  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, LD_mag))
 }

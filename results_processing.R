@@ -93,5 +93,5 @@ reps= 5000
   
   View(avg_res[avg_res$exposure ==1,])
   
-  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/TEST_FOR_MEETING_LD_EXP_05.txt")
+  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/TEST_FOR_MEETING_LD_EXP_FULL.txt")
  
