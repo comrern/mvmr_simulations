@@ -21,7 +21,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 10
+reps = 5000
 run = 0
 results = data.frame()
 results_all = NULL
