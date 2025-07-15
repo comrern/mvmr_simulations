@@ -21,7 +21,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 20 
+reps = 10
 run = 0
 results = data.frame()
 results_all = NULL
@@ -85,11 +85,10 @@ for (LD_mod in c(1,2,3)){
       
       ### MVMR
       
-      # mvmr_res <- run_mvmr(MR_dat, dat, LD_mod)
+      mvmr_res <- run_mvmr(MR_dat, dat, LD_mod)
       
       ## format results
-      # res_run <- rbind(univariate_results, mvmr_res)
-      res_run <- univariate_results
+      res_run <- rbind(univariate_results, mvmr_res)
       res_run$run <- j
       res_run$mode <- model
       

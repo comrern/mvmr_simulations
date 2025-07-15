@@ -11,20 +11,12 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mag){
   df$V1 <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
-
-    # prob_inc <-  0.3 + 0.2 * df$X2  ## build probability vector based on value of X2 --> 
-    # ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
-    # 
-    # prob_dec <-  0.4 - 0.2 * df$X2
-    # 
-    # prob_inc_g <- rep(prob_inc, times = nsnps/3)
-    # prob_dec_g <- rep(prob_dec, times = nsnps/3)
-    # 
-    # G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, (nsnps/3))
-    # G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
-    # G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
-    # 
-    # G <- cbind(G_inc, G_dec, G_cont)
+  local_anc <- matrix(rbinom(n*nsnps, 2, df[,"X2"]), n, nsnps)
+  
+  # G <- matrix(rbinom(n * nsnps, 2, 
+  #                    ifelse(local_anc == 2, 0.4, 
+  #                           ifelse(local_anc == 1, 0.35, 0.3))), 
+  #             n, nsnps)
     
   
   G <- matrix(rbinom(n*nsnps, 2, 0.4), n, nsnps)
@@ -45,7 +37,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mag){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(nsnps,0.01,0.05))
+  effs_x1 <- abs(rnorm(nsnps,0,0.08))
   
   
   df <- (cbind(df, G, G2))
@@ -53,11 +45,11 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mag){
   
   # model LD
   
-  LD_dec <- 1 - (LD_mag * df[,"X2"])
-  LD_dec <- ifelse(LD_dec > 1,1 , LD_dec)
+  effs_mat <- matrix(effs_x1, nrow = nrow(local_anc), ncol = length(effs_x1), byrow = TRUE) *
+    (1 - ((local_anc / 2) * LD_mag))
   
+  df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df[,"X2"] + betaC*df[,"C"] + v_x1
   
-  df[,"X1"] <- as.vector((G %*% effs_x1) * LD_dec) + betaC*df[,"C"] + v_x1 ## CHECK THIS
   
   df[,"X1_novar"] <- G[,]%*%effs_x1 + betaC*df[,"C"] + v_x1  
   
@@ -160,13 +152,8 @@ univariate_MR <- function(MR_dat, LD_mod){
 
   dat1 <- harmonise_data(exp1, out)
   dat2 <- harmonise_data(exp2, out)
-  # 
-  # if (LD_mod==2) {
-  #   
-  #   dat1 <- dat1[dat1$SNP %in% MR_dat[MR_dat$x_novar_p < 5e-8,]$id,]
-  #   
-  # } else  
-    dat1 <- dat1[dat1$pval.exposure <= 5e-8,]
+
+  dat1 <- dat1[dat1$pval.exposure <= 5e-8,]
 
   dat2 <- dat2[dat2$pval.exposure <= 5e-8,]
   
