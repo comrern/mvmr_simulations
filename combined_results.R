@@ -9,7 +9,7 @@ results <- read.csv("./combined_results10k.csv")
 source("./modes_sims.R")
 source("./functions_sims.R")
 
-reps=10
+reps= 10000
 rep_res <- data.frame()
 avg_res <- data.frame()
 
@@ -45,7 +45,7 @@ avg_res <- data.frame()
     ## calculate coverage
     
     results_mode <- cbind.data.frame(results_mode, (results_mode$b - (1.96 * results_mode$se)),((results_mode$b + (1.96 * results_mode$se)))) 
-    names(results_mode)[9:10] <- c("lci","uci")
+    names(results_mode)[10:11] <- c("lci","uci")
     
     b1_v <- rep(b1, time=reps)
     b2_v <- rep(b2, time=reps)
@@ -53,6 +53,10 @@ avg_res <- data.frame()
     row_res$cov_b <- list(sum(between(b1_v, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$uci))
                           , sum(between(b1_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$uci))
                           ,  sum(between(b2_v, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$lci, results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$uci)))
+   
+     row_res$F_stat <- list(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$F_stat, na.rm=T)
+                           , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$F_stat), na.rm=T)
+                           , mean((results_mode[results_mode$method == "mvmr" & results_mode$exp == 2 ,]$F_stat), na.rm=T))
     
     row_res$bias   <- list(abs(mean(results_mode[results_mode$method == "Inverse variance weighted" & results_mode$exp == 1 ,]$b - b1_v))
                                 , abs(mean(results_mode[results_mode$method == "mvmr" & results_mode$exp == 1 ,]$b - b1_v))
@@ -70,12 +74,12 @@ avg_res <- data.frame()
 
   
   avg_res <- avg_res %>%
-    mutate(across(c(b, se, cov_b, sig, bias, MSE), as.numeric))  # Replace with actual column names
+    mutate(across(c(b, se, F_stat, cov_b, sig, bias, MSE), as.numeric))  # Replace with actual column names
   
 avg_res$cov_p <- (avg_res$cov_b/ reps)*100
 
 View(avg_res[avg_res$exposure == 1,])
   
-  # write.table(avg_res, "/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/real_data_10k.csv")
+  write.table(avg_res, "/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/real_data_sims_averaged_res")
   
 

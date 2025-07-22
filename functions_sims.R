@@ -49,7 +49,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, LD_mod){
   v_y <- errors[,2]
   v_c <- rnorm(n,0,1)
   
-  effs_x1 <- abs(rnorm(28,0,0.1))
+  effs_x1 <- abs(rnorm(28,0,0.05))
   
   
   df <- (cbind(df, G, G2))
@@ -89,7 +89,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, LD_mod){
   
   # df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df["X2"] + betaC*df[,"C"] + v_x1
   
-  df[,"X1"] <- G[,]%*%effs_x1 + betaC*df[,"C"] + v_x1  
+  df[,"X1"] <- as.vector(G %*% effs_x1) + betaC*df[,"C"] + v_x1  
 
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
@@ -102,7 +102,7 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, LD_mod){
 
 GWASres <- function(dat){
   MR_dat = data.frame()
-  dat <- dat[order(dat$ID), ]
+  dat <- dat[sample(nrow(dat)), , drop = FALSE]
   dat.1 <- dat[1:nobs,]
   dat.2 <- dat[(nobs+1):(2*nobs),]
   
@@ -182,15 +182,17 @@ univariate_MR <- function(MR_dat){
   #   }
   
   mr1 <- mr(dat1)
-
+  f_1 <- mean((dat1$beta.exposure^2)/ (dat1$se.exposure^2))
   mr1$exp <- 1
-
-  univ_results <- mr1[,5:10]
   
+  univ_results <- mr1[,5:10]
+  univ_results$F_stat <- f_1
   return(univ_results)
 }
 
-run_mvmr <- function(MR_dat){
+run_mvmr <- function(MR_dat, dat){
+  
+  MR_dat <- MR_dat[(MR_dat$X1_p < 5e-8) | (MR_dat$X2_p < 5e-8) ,]
   
   
   dat_formatted <- format_mvmr(
@@ -201,7 +203,9 @@ run_mvmr <- function(MR_dat){
     RSID=MR_dat$id
   )
   
-  dat_IS <- strength_mvmr(r_input= dat_formatted, gencov = 0)
+  cov <- snpcov_mvmr(dat[,as.character(MR_dat$id)], dat[,c("X1","X2")])
+  
+  strength <- strength_mvmr(dat_formatted, gencov = 0)
   
   res_mvmr <- as.data.frame(ivw_mvmr(dat_formatted))
   res_mvmr$method <- "mvmr"
@@ -209,7 +213,9 @@ run_mvmr <- function(MR_dat){
   res_mvmr$nsnp <- c(50, 50)                                ## fix properly ##
   res_mvmr <- res_mvmr[,c(5,7,1,2,4,6)]
   colnames(res_mvmr) <- c("method","nsnp","b","se","pval","exp")
-    
+  
+  res_mvmr$F_stat <- c(strength$exposure1, strength$exposure2)
+  
   pres <- pleiotropy_mvmr(r_input = dat_formatted, gencov = 0)
   
   

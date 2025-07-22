@@ -21,7 +21,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 5000
+reps = 1000
 run = 0
 results = data.frame()
 results_all = NULL
@@ -79,7 +79,7 @@ results_ivw = data.frame()
             
           ### MVMR
             
-            mvmr_res <- run_mvmr(MR_dat)
+            mvmr_res <- run_mvmr(MR_dat, dat)
             
         ## format results
           res_run <- rbind(univariate_results, mvmr_res)
