@@ -3,7 +3,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-results <- read.table("./results/ld_run5/rerun/results_ld_rerun.csv")
+results <- read.table("./results/ld_var/results_ld_comb.csv")
 
 reps= 5000  
   ## test params:
@@ -93,5 +93,5 @@ reps= 5000
   
   View(avg_res[avg_res$exposure ==1,])
   
-  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/TEST_FOR_MEETING_LD_EXP_FULL.txt")
+  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/full_ld_combined_res_averaged.txt")
  
