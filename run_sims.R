@@ -1,12 +1,12 @@
-args <- as.numeric(commandArgs(T))
-set.seed((args[1]*100000))
-job_id <- ((args[1]))
-message("job number ", job_id)
-
-
-setwd("/user/work/kb22541/simulations/ld_experiments")
-output_path <- "./results/"
-.libPaths("/user/work/kb22541/rlib")
+# args <- as.numeric(commandArgs(T))
+# set.seed((args[1]*100000))
+# job_id <- ((args[1]))
+# message("job number ", job_id)
+# 
+# 
+# setwd("/user/work/kb22541/simulations/ld_experiments")
+# output_path <- "./results/"
+# .libPaths("/user/work/kb22541/rlib")
 
 
 
@@ -21,7 +21,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 5000
+reps = 4
 run = 0
 results = data.frame()
 results_all = NULL
@@ -41,7 +41,7 @@ results_ivw = data.frame()
 
 
 
-for (LD_mod in c(1,2,3)){
+for (LD_mod in c(1,2,3,4)){
   results_models <- data.frame()
 
       for (model in c("A","B","C","D"))  {
@@ -52,7 +52,7 @@ for (LD_mod in c(1,2,3)){
       
       setup_mode=1
       run <- run + 1  
-      print(paste("on run", run, model, "and mode", setup_mode))
+      print(paste("on run", run, model, "and LD mode", LD_mod))
       
       params <- setup(setup_mode, model)
       snps = params[1]      
@@ -66,7 +66,7 @@ for (LD_mod in c(1,2,3)){
       LD_mag=params[9]
       
       
-      dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, LD_mag)
+      dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, LD_mod, LD_mag)
       #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
       #### 
       
@@ -85,12 +85,18 @@ for (LD_mod in c(1,2,3)){
       
       ### MVMR
       
-      mvmr_res <- run_mvmr(MR_dat, dat, LD_mod)
+      # mvmr_res <- run_mvmr(MR_dat, dat, LD_mod)
       
       ## format results
-      res_run <- rbind(univariate_results, mvmr_res)
+      # res_run <- rbind(univariate_results, mvmr_res)
+      res_run <- univariate_results
+      
+      het <- heterogeneity(MR_dat)
+      
       res_run$run <- j
       res_run$mode <- model
+      res_run$Qpval <- het[3]
+      res_run$Q_pct <- het[4]
       
       results_rep <- rbind(results_rep, res_run)  
       

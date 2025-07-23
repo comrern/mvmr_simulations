@@ -1,7 +1,7 @@
 
 
 
-data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mag){
+data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mod, LD_mag){
   
   n=2*ss
   
@@ -13,13 +13,13 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mag){
   
   local_anc <- matrix(rbinom(n*nsnps, 2, df[,"X2"]), n, nsnps)
   
-  # G <- matrix(rbinom(n * nsnps, 2, 
-  #                    ifelse(local_anc == 2, 0.4, 
-  #                           ifelse(local_anc == 1, 0.35, 0.3))), 
-  #             n, nsnps)
+  G <- matrix(rbinom(n * nsnps, 2,
+                     ifelse(local_anc == 2, 0.4,
+                            ifelse(local_anc == 1, 0.35, 0.3))),
+              n, nsnps)
     
   
-  G <- matrix(rbinom(n*nsnps, 2, 0.4), n, nsnps)
+  # G <- matrix(rbinom(n*nsnps, 2, 0.4), n, nsnps)
   
   G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
   
@@ -45,9 +45,20 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mag){
   
   # model LD
   
-  effs_mat <- matrix(effs_x1, nrow = nrow(local_anc), ncol = length(effs_x1), byrow = TRUE) *
-    (1 - ((local_anc / 2) * LD_mag))
   
+  if(LD_mod ==4){
+    snp_dir <- sample(c(-1, 1), size = length(effs_x1), replace = TRUE)
+    
+    dir_mat <- matrix(snp_dir, nrow = nrow(local_anc), ncol = length(effs_x1), byrow = TRUE)
+    
+    effs_mat <- matrix(effs_x1, nrow = nrow(local_anc), ncol = length(effs_x1), byrow = TRUE) *
+      (1 - ((local_anc / 2) * LD_mag * dir_mat))
+    
+    
+  } else{
+    effs_mat <- matrix(effs_x1, nrow = nrow(local_anc), ncol = length(effs_x1), byrow = TRUE) *
+      (1 - ((local_anc / 2) * LD_mag))
+  }
   df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df[,"X2"] + betaC*df[,"C"] + v_x1
   
   
@@ -82,7 +93,7 @@ GWASres <- function(dat, LD_mod){
     MR_dat[i,"X1_se"] <- a$coefficient[2,2]
     MR_dat[i,"X1_p"] <- a$coefficient[2,4]
     MR_dat[i,"X1_r2"] <- a$r.squared
-    b <- summary(lm(dat.1$X2~dat.1[,i]))
+    b <- summary(lm(dat.2$X1~dat.1[,i]))
     MR_dat[i,"X2_b"] <- b$coefficient[2,1]
     MR_dat[i,"X2_se"] <- b$coefficient[2,2]
     MR_dat[i,"X2_p"] <- b$coefficient[2,4]
@@ -111,65 +122,70 @@ GWASres <- function(dat, LD_mod){
   MR_dat$af <- allele_frequencies
   MR_dat$id <- seq.int(nrow(MR_dat))
   MR_dat$EA <- "A"
-
+  MR_dat <- MR_dat[MR_dat$X1_p <= 5e-8,]
   return(MR_dat)
 }
 
+
+heterogeneity <- function(MR_dat){
+  
+  Q_df <-  data.frame(ID = numeric(),
+                           Qsnp = numeric(),
+                           Qp = numeric(),
+                           stringsAsFactors = FALSE)
+  
+  for (i in 1:nrow(MR_dat)){
+    
+    betas <- MR_dat[i,c("X1_b","X2_b")] 
+    ses <- MR_dat[i,c("X1_se","X2_se")]
+    
+    w <- 1 / (ses)^2 # get weights
+    ivw_b <- sum(betas * w) / sum(w) # ivw betas
+    se <- sqrt(1 / sum(w)) # ivw se
+    
+    Q <- sum(w * (betas - ivw_b)^2)
+    
+   
+    df <- length(betas) -1
+  
+    Qpval <- stats::pchisq(Q, df, lower.tail=FALSE)
+    
+    Q_df[i, ] <- list(i, Q, Qpval)
+    
+  
+  }
+  
+  Q_total <-  c("Qsum",
+                sum(Q_df$Qsnp), 
+                pchisq(sum(Q_df$Qsnp),  (length(Q_df$ID)  - 1), lower.tail = FALSE),
+                (mean(Q_df$Qp < 0.05) * 100)
+                )
+  
+  return(Q_total)  
+
+  
+}
+
+
 univariate_MR <- function(MR_dat, LD_mod){
   
-  
-  
+
+  f_1 <- mean((MR_dat$X1_b^2)/ (MR_dat$X1_se^2))
 
   
-  exp1 <- format_data(MR_dat, type="exposure",
-                      snp_col="id",
-                      beta_col="X1_b",
-                      se_col="X1_se",
-                      eaf_col="af",
-                      pval_col="X1_p",
-                      effect_allele_col = "EA"
-  )
+  mr1 <- as.data.frame(mr_ivw(MR_dat$X1_b,
+                MR_dat$Y_b,
+                MR_dat$X1_se,
+                MR_dat$Y_se))
   
-  exp2 <- format_data(MR_dat, type="exposure",
-                      snp_col="id",
-                      beta_col="X2_b",
-                      se_col="X2_se",
-                      eaf_col="af",
-                      pval_col="X1_p",
-                      effect_allele_col = "EA"
-  )
+  # mr2 <- mr1
+  univ_results <- mr1[,1:4]
+  univ_results$exp <- 1
+  # mr2$exp <- 2
   
-  out <- format_data(MR_dat, type="outcome",
-                     snp_col="id",
-                     beta_col="Y_b",
-                     se_col="Y_se",
-                     eaf_col="af",
-                     pval_col="X1_p",
-                     effect_allele_col = "EA"
-  )
-  
-  
+  # univ_results <- rbind(mr1, mr2)
 
-  dat1 <- harmonise_data(exp1, out)
-  dat2 <- harmonise_data(exp2, out)
-
-  dat1 <- dat1[dat1$pval.exposure <= 5e-8,]
-
-  dat2 <- dat2[dat2$pval.exposure <= 5e-8,]
-  
-  f_1 <- mean((dat1$beta.exposure^2)/ (dat1$se.exposure^2))
-  f_2 <- mean((dat2$beta.exposure^2)/ (dat2$se.exposure^2))
-  
-  mr1 <- mr(dat1)
-  
-  mr2 <- mr1
-  
-  mr1$exp <- 1
-  mr2$exp <- 2
-  
-  univ_results <- rbind(mr1, mr2)
-  univ_results <- univ_results[,5:10]
-  univ_results$F_stat <- c(f_1,f_2)
+  univ_results$F_stat <- f_1
   return(univ_results)
 }
 
