@@ -59,12 +59,12 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, LD_mod, LD_mag){
     effs_mat <- matrix(effs_x1, nrow = nrow(local_anc), ncol = length(effs_x1), byrow = TRUE) *
       (1 - ((local_anc / 2) * LD_mag))
   }
-  df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df[,"X2"] + betaC*df[,"C"] + v_x1
+  df[,"X1"] <- rowSums(G[,]*effs_mat) +  betaC*df[,"C"] + v_x1
   
   
   df[,"X1_novar"] <- G[,]%*%effs_x1 + betaC*df[,"C"] + v_x1  
   
-  df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
+  df[,"Y"] <- beta1*df[,"X1"] + betaC*df[,"C"] + v_y  
   
   
   data <- df
@@ -93,7 +93,7 @@ GWASres <- function(dat, LD_mod){
     MR_dat[i,"X1_se"] <- a$coefficient[2,2]
     MR_dat[i,"X1_p"] <- a$coefficient[2,4]
     MR_dat[i,"X1_r2"] <- a$r.squared
-    b <- summary(lm(dat.2$X1~dat.1[,i]))
+    b <- summary(lm(dat.2$X1~dat.2[,i]))
     MR_dat[i,"X2_b"] <- b$coefficient[2,1]
     MR_dat[i,"X2_se"] <- b$coefficient[2,2]
     MR_dat[i,"X2_p"] <- b$coefficient[2,4]
@@ -132,6 +132,8 @@ heterogeneity <- function(MR_dat){
   Q_df <-  data.frame(ID = numeric(),
                            Qsnp = numeric(),
                            Qp = numeric(),
+                            X1_b = numeric(),
+                          x2_b = numeric(),
                            stringsAsFactors = FALSE)
   
   for (i in 1:nrow(MR_dat)){
@@ -150,14 +152,15 @@ heterogeneity <- function(MR_dat){
   
     Qpval <- stats::pchisq(Q, df, lower.tail=FALSE)
     
-    Q_df[i, ] <- list(i, Q, Qpval)
+    Q_df[i, ] <- list(i, Q, Qpval, betas[1, 1], betas[1, 2])
+    
     
   
   }
   
   Q_total <-  c("Qsum",
                 sum(Q_df$Qsnp), 
-                pchisq(sum(Q_df$Qsnp),  (length(Q_df$ID)  - 1), lower.tail = FALSE),
+                pchisq(sum(Q_df$Qsnp), df =  (length(Q_df$ID)  - 1), lower.tail = FALSE),
                 (mean(Q_df$Qp < 0.05) * 100)
                 )
   

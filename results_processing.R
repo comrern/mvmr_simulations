@@ -28,17 +28,20 @@ reps= 5000
       row_res$model <- c(model, model, model)
       row_res$method <- c("IVW","MVMR","MVMR")
       row_res$exposure <- c(1,1,2)
+
       
       results_mode <-single_model_res[single_model_res$mode == model,]
+     
+         b1 <- rep(b1, time=nrow(results_mode))
       
         row_res$b     <- mean(results_mode$b, na.rm=T)
         row_res$se    <- mean(results_mode$se, na.rm=T)
         row_res$sig   <- sum(ifelse(results_mode$pval < 0.05,1,0), na.rm=T)
-        row_res$bias   <- mean((results_mode$b - b1_v), na.rm=T)
+        row_res$bias   <- mean((results_mode$b - b1), na.rm=T)
         row_res$F_stat <- mean(results_mode$F_stat, na.rm=T)
-        row_res$mse <- mean((results_mode$b - b1_v)^2, na.rm=T)
+        row_res$mse <- mean((results_mode$b - b1)^2, na.rm=T)
         row_res$nsnp <- mean(results_mode$nsnp, na.rm = T)
-        row_res$Q_pct <- sum(results_mode$Qpval > 0.05)
+        row_res$Q_pct <- (sum(results_mode$Qpval < 0.05) / 5 ) * 100
         row_res$mean_Qsnps <- mean(as.numeric(results_mode$Q_pct))      
       ## calculate coverage
       
@@ -46,10 +49,9 @@ reps= 5000
       names(results_mode)[12:13] <- c("lci","uci")
       
       
-      b1_v <- rep(b1, time=nrow(results_mode))
+
       
-      
-      row_res$cov_b <- sum(between(b1_v, results_mode$lci, results_mode$uci), na.rm=T)
+      row_res$cov_b <- sum(between(b1, results_mode$lci, results_mode$uci), na.rm=T)
 
                
 

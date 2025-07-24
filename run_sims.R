@@ -21,7 +21,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 4
+reps = 2
 run = 0
 results = data.frame()
 results_all = NULL
@@ -62,9 +62,9 @@ for (LD_mod in c(1,2,3,4)){
       b2 = params[5]
       betaC=params[6]
       beta2C=params[7]
-      xi=params[8]
-      LD_mag=params[9]
+      LD_mag=params[8]
       
+                     
       
       dat <- data_gen(snps, snpsc, nobs, b1 , b2, betaC, beta2C, LD_mod, LD_mag)
       #(no of snps, snps for confounding var, samplesize, beta1, beta2, snp-confounder effect)
