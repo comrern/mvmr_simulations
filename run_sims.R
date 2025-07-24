@@ -16,20 +16,20 @@ library(TwoSampleMR)
 library(MVMR)
 library(truncnorm)
 library(tidyverse)
+library(metafor)
 
 source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 2
+reps = 10
 run = 0
 results = data.frame()
 results_all = NULL
-results_ivw = NULL
 results_out = NULL
 mvmrres <- NULL
 
-results_ivw = data.frame()
+
 
 ## LD mod settings;
 
@@ -97,6 +97,7 @@ for (LD_mod in c(1,2,3,4)){
       res_run$mode <- model
       res_run$Qpval <- het[3]
       res_run$Q_pct <- het[4]
+      res_run$Isq <- het[5]
       
       results_rep <- rbind(results_rep, res_run)  
       

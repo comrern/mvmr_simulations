@@ -133,7 +133,7 @@ heterogeneity <- function(MR_dat){
                            Qsnp = numeric(),
                            Qp = numeric(),
                             X1_b = numeric(),
-                          x2_b = numeric(),
+                          X2_b = numeric(),
                            stringsAsFactors = FALSE)
   
   for (i in 1:nrow(MR_dat)){
@@ -158,10 +158,15 @@ heterogeneity <- function(MR_dat){
   
   }
   
+  Qdf <- (length(Q_df$ID)  - 1)
+  Q_all <- sum(Q_df$Qsnp)
+  
+  
   Q_total <-  c("Qsum",
                 sum(Q_df$Qsnp), 
-                pchisq(sum(Q_df$Qsnp), df =  (length(Q_df$ID)  - 1), lower.tail = FALSE),
-                (mean(Q_df$Qp < 0.05) * 100)
+                pchisq(Q_all, df =  Qdf, lower.tail = FALSE),
+                (mean(Q_df$Qp < 0.05) * 100),
+                max(0, ((Q_all - Qdf)/ Q_all) * 100)
                 )
   
   return(Q_total)  

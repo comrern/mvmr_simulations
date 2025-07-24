@@ -14,7 +14,7 @@ setup <- function(m,k){
 
     b1 = 0.4
     b2 = 0
-    LD_mag = 0.25
+    LD_mag = 0.125
     
 
   }
@@ -23,7 +23,7 @@ setup <- function(m,k){
     
     b1 = 0.4
     b2 = 0
-    LD_mag = 0.5
+    LD_mag = 0.25
     
 
   }
@@ -32,13 +32,12 @@ setup <- function(m,k){
     
     b1 = 0.4
     b2 = 0
-    LD_mag = 0.75
+    LD_mag = 0.5
     
   }
   
   
-  snpsc = ifelse(m==4, 5, 33)
-  xi = ifelse(m==3, 1, 0)
+  snpsc = 33
   snps=33
   nobs = 25000
   betaC <- 0
@@ -46,5 +45,5 @@ setup <- function(m,k){
 
 
   
-  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C, xi, LD_mag))
+  return(c(snps, snpsc, nobs, b1 , b2, betaC, beta2C,  LD_mag))
 }
