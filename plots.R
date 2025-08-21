@@ -1,9 +1,10 @@
 library(ggplot2)
 library(TwoSampleMR)
 
-data <- read.table("/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avergaed_results_fullsims.csv", header=T)
-data <- data[1:48,]
+data <- read.table("/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avergaed_results_fullsims.csv", header=T, sep= ",")
 
+
+data <- data[1:48,]
 data <- data[!(data$exposure==2),]
 
 data$key <- paste0(data$model,"-", data$method ,"-",data$exposure)
