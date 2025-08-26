@@ -17,4 +17,4 @@ data_list <- lapply(files, function(f) {
 final_data <- do.call(rbind, data_list)
 
 
-write.table(final_data, "/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/combined_results10k.csv", row.names=F, quote=F)
+write.table(final_data, "/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/real_data_sims_260825.csv", row.names=F, quote=F, sep=",")

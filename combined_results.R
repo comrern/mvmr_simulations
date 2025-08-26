@@ -2,12 +2,14 @@
 library(dplyr)
 library(tidyverse)
 
-results <- read.csv("./combined_results10k.csv")
+setwd("/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/")
+
+results <- read.csv("./real_data_sims_260825.csv")
 
 # results <- results_models
 
-source("./modes_sims.R")
-source("./functions_sims.R")
+source("../modes_sims.R")
+source("../functions_sims.R")
 
 reps= 10000
 rep_res <- data.frame()
@@ -78,8 +80,8 @@ avg_res <- data.frame()
   
 avg_res$cov_p <- (avg_res$cov_b/ reps)*100
 
-View(avg_res[avg_res$exposure == 1,])
+View(avg_res)
   
-  write.table(avg_res, "/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/real_data_sims_averaged_res")
+  write.table(avg_res, "/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/real_data_sims_processed_260925")
   
 
