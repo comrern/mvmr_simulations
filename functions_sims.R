@@ -11,33 +11,19 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, setup_mode){
   df$V1 <- seq.int(nrow(df))
   df$X2 <- rtruncnorm(n, a=0.0001, b=0.9999, mean= 0.276, sd= 0.1443219)               ## based on observed data
   
-  prob_inc <-  0.3 + (0.2 * df$X2)  ## build probability vector based on value of X2 --> 
-  ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
-  
-  prob_dec <-  0.4 - (0.2 * df$X2)
-  
-  prob_inc_g <- rep(prob_inc, times = nsnps/3)
-  prob_dec_g <- rep(prob_dec, times = nsnps/3)
-  
-  G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, (nsnps/3))
-  G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
-  G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
-  
-  G <- cbind(G_inc, G_dec, G_cont)
-  
-  prob_inc <-  0.2 + (0.3 * df$X2)  ## build probability vector based on value of X2 --> 
-  ## each observation of G binom distribution has probability dependent on value of X2 meaning higher X2 = higher AF
-  
-  prob_dec <-  1 - (0.3 * df$X2)
-  
-  
-  G_inc <-  matrix(rbinom(n*(nsnps/3), 2, prob_inc), n, (nsnps/3))
-  G_dec <-  matrix(rbinom(n*(nsnps/3), 2, prob_dec), n, (nsnps/3))
-  G_cont <-  matrix(rbinom(n*(nsnps/3), 2, 0.4), n, (nsnps/3))
-  
-  G2 <- cbind(G_inc, G_dec, G_cont)
+  local_anc <- matrix(rbinom(n*nsnps, 2, df[,"X2"]), n, nsnps)
 
-  G2 <- matrix(rbinom(n*snpsc, 2, 0.4), n, snpsc)
+  G <- matrix(rbinom(n * nsnps, 2,
+                     ifelse(local_anc == 2, 0.4,
+                            ifelse(local_anc == 1, 0.35, 0.3))),
+              n, nsnps)
+
+  G2 <- matrix(rbinom(n * nsnps, 2,
+                     ifelse(local_anc == 2, 0.4,
+                            ifelse(local_anc == 1, 0.3, 0.2))),
+              n, nsnps)
+  
+
   
   means <- c(0, 0)                                   
   cov_matrix <- matrix(c(1, 0, 0, 1),
@@ -59,29 +45,15 @@ data_gen <- function(nsnps,snpsc,ss,beta1,beta2, betaC, beta2c, xi, setup_mode){
   df[,"C"] <-  beta2C*df[,"X2"] + v_c 
   
   ### Model LD
-  if(setup_mode==2){
-    LD_inc <- 0.5 + 0.5 * (df[,"X2"])
-    LD_inc <- ifelse(LD_inc> 1,1 , LD_inc)
-    
-    LD_dec <- 1 - 0.5 * (df[,"X2"])
-    LD_dec <- ifelse(LD_dec> 1,1 , LD_dec)
 
-    LD_inc_mat  <- sapply(effs_x1[1:(nsnps/3)], function(y_val) LD_inc * y_val)
-    LD_dec_mat  <- sapply(effs_x1[((nsnps/3)+1):nsnps], function(y_val) LD_dec * y_val)
-  
-    effs_mat <- cbind(LD_inc_mat, LD_dec_mat)
-    
-    df[,"X1"] <- rowSums(G[,]*effs_mat) + xi*df[,"X2"] + betaC*df[,"C"] + v_x1
-    
-  } else {
-    df[,"X1"] <- G[,]%*%effs_x1 + xi*df[,"X2"] + betaC*df[,"C"] + v_x1
-  }
+  df[,"X1"] <- G[,]%*%effs_x1 + xi*df[,"X2"] + betaC*df[,"C"] + v_x1
+
   
   df[,"Y"] <- beta1*df[,"X1"] + beta2*df[,"X2"] + betaC*df[,"C"] + v_y  
   
   ## measurement error for X2
   if (setup_mode == 4) {
-    v_x2 <- rnorm(n,0,1)
+    v_x2 <- rnorm(n,0.5,1)
     df[,"X2_me"] <- df["X2"] + v_x2
   }
   
