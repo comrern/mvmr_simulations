@@ -3,9 +3,9 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-results <- read.table("./results/ld_var/results_ld_comb.csv")
+results <- read.table("./results/ld_run5/results_ld_sims.csv")
 
-reps= 5000  
+reps= 10000  
   ## test params:
   # results <- results_all
   avg_res <- data.frame()
@@ -23,10 +23,9 @@ reps= 5000
       b2 = params[5]
       
       
-      row_res <- as.data.frame(matrix(NA, nrow = 3, ncol = 8))
-      colnames(row_res) <- c("model","method","exposure","b","se","Q_pct","mean_Qsnps","cov_b")
+      row_res <- as.data.frame(matrix(NA, nrow = 3, ncol = 7))
+      colnames(row_res) <- c("model","exposure","b","se","Q_pct","mean_Qsnps","cov_b")
       row_res$model <- c(model, model, model)
-      row_res$method <- c("IVW","MVMR","MVMR")
       row_res$exposure <- c(1,1,2)
 
       
@@ -49,8 +48,9 @@ reps= 5000
       results_mode <- cbind.data.frame(results_mode, (results_mode$b - (1.96 * results_mode$se)),((results_mode$b + (1.96 * results_mode$se)))) 
       names(results_mode)[13:14] <- c("lci","uci")
       
+      row_res$lci <- mean(results_mode$lci, na.rm=T)
+      row_res$uci <- mean(results_mode$uci, na.rm=T)
       
-
       
       row_res$cov_b <- sum(between(b1, results_mode$lci, results_mode$uci), na.rm=T)
 
@@ -67,11 +67,11 @@ reps= 5000
   
   
   avg_res <- avg_res %>%
-    mutate(across(c(b, se, cov_b, sig, bias, F_stat, nsnp, mse), as.numeric))  # Replace with actual column names
+    mutate(across(c(b, se, cov_b, sig, bias, F_stat, nsnp, mse, lci, uci), as.numeric))  # Replace with actual column names
   
   avg_res$cov_p <- (avg_res$cov_b/ reps)*100
   
   View(avg_res[avg_res$exposure ==1,])
   
-  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/full_ld_combined_res_averaged.txt")
+  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/averaged_ld_sims_results.txt")
  
