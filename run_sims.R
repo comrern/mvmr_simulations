@@ -1,12 +1,12 @@
-# args <- as.numeric(commandArgs(T))
-# set.seed((args[1]*100000))
-# job_id <- ((args[1]))
-# message("job number ", job_id)
-# 
-# 
-# setwd("/user/work/kb22541/simulations/ld_experiments")
-# output_path <- "./results/"
-# .libPaths("/user/work/kb22541/rlib")
+args <- as.numeric(commandArgs(T))
+set.seed((args[1]*100000))
+job_id <- ((args[1]))
+message("job number ", job_id)
+
+
+setwd("/user/work/kb22541/simulations/ld_experiments")
+output_path <- "./results/"
+.libPaths("/user/work/kb22541/rlib")
 
 
 
