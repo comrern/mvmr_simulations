@@ -35,6 +35,14 @@ setup <- function(m,k){
     LD_mag = 0.5
     
   }
+  if(k=='E'){    ## No ancestry effect
+    
+    b1 = 0
+    b2 = 0
+    LD_mag = 0.25
+    
+  }
+
   
   
   snpsc = 33

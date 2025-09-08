@@ -22,7 +22,7 @@ source('modes_sims.R')
 source('functions_sims.R')
 
 
-reps = 10
+reps = 1000
 run = 0
 results = data.frame()
 results_all = NULL
@@ -44,7 +44,7 @@ mvmrres <- NULL
 for (LD_mod in c(1,2,3,4)){
   results_models <- data.frame()
 
-      for (model in c("A","B","C","D"))  {
+      for (model in c("A","B","C","D","E"))  {
 
     results_rep = data.frame()
     run=0
@@ -95,6 +95,7 @@ for (LD_mod in c(1,2,3,4)){
       
       res_run$run <- j
       res_run$mode <- model
+      res_run$Q <- het[2]
       res_run$Qpval <- het[3]
       res_run$Q_pct <- het[4]
       res_run$Isq <- het[5]

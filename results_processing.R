@@ -17,7 +17,7 @@ reps= 10000
     
     rep_res <- data.frame()
     setup_mode = 2
-    for (model in c("A","B","C","D") ){
+    for (model in c("A","B","C","D","E") ){
       params <- setup(setup_mode, model)
       b1 = params[4]
       b2 = params[5]
@@ -40,6 +40,7 @@ reps= 10000
         row_res$F_stat <- mean(results_mode$F_stat, na.rm=T)
         row_res$mse <- mean((results_mode$b - b1)^2, na.rm=T)
         row_res$nsnp <- mean(results_mode$nsnp, na.rm = T)
+        row_res$meanQ <- mean(as.numeric(results_mode$Q), na.rm= T)
         row_res$Q_pct <- (sum(as.numeric(results_mode$Qpval) < 0.05) / reps ) * 100
         row_res$mean_Qsnps <- mean(as.numeric(results_mode$Q_pct))  
         row_res$mean_Isq <- mean(as.numeric(results_mode$Isq))
@@ -71,7 +72,7 @@ reps= 10000
   
   avg_res$cov_p <- (avg_res$cov_b/ reps)*100
   
-  View(avg_res[avg_res$exposure ==1,])
+  avg_res <- unique(avg_res[avg_res$exposure ==1,])
   
   write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/averaged_ld_sims_results.txt")
  
