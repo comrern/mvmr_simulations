@@ -1,9 +1,9 @@
 library(ggplot2)
 library(TwoSampleMR)
 
-data <- read.table("/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/averaged_ld_sims_results.txt")
+data <- read.table("/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/averaged_ld_sims_results.txt", header=T)
 
-data <- data[!(data$exposure==2),]
+# data <- data[!(data$exposure==2),]
 
 data$key <- paste0(data$model,"-", data$method ,"-",data$LD_mod)
 
@@ -37,20 +37,20 @@ y_labels <- data %>%
 
 
 # Plot
-combined_plot <- ggplot(data, aes(y = y_pos, x = b, xmin = lci, xmax = uci, color = factor(LD_mod))) +
+combined_plot <- ggplot(data, aes(y = y_pos, x = b, xmin = lci, xmax = uci, color = factor(model))) +
   geom_point() +
-  geom_errorbarh(height = 0.15) +
+  geom_errorbar(height = 0.15) +
   geom_vline(xintercept = 0.4, 
              linetype = "dashed", color = "red") +
   scale_y_continuous(
-    breaks = y_labels$key_id,
-    labels = y_labels$key
+    breaks = y_labels$LD_mod,
+    labels = y_labels$LD_mod
   ) +
-  facet_wrap(~ model, scales = "free_y") +
+  facet_wrap(~ LD_mod, scales = "free_y") +
   xlab("Beta") +
   ylab("Model / Mode") +
   theme_bw() +
-  labs(color = "Setup Mode") +
+  labs(color = "Model") +
   xlim(0.2, 0.6)
 
 print(combined_plot)
