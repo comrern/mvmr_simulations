@@ -112,5 +112,5 @@ reps= 10000
   
   View(avg_res[avg_res$exposure ==1,])
   
-write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/mainsims_MCCIs.csv")
+write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/mainsims_MCCIs.csv", sep =",")
  
