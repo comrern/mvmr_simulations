@@ -1,7 +1,7 @@
 library(ggplot2)
 library(TwoSampleMR)
 
-data <- read.table("/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/avergaed_results_fullsims.csv", header=T, sep= ",")
+data <- read.table("/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/mainsims_MCCIs.csv", header=T, sep= ",")
 
 
 data <- data[1:48,]
@@ -13,6 +13,8 @@ data$labels <- c("IVW - Exposure 1", "MVMR - Exposure 1","IVW - Exposure 1", "MV
 
 data$lci95 <- data$b - (data$se * 1.96)
 data$uci95 <- data$b + (data$se * 1.96)
+
+
 
 
 ### subplots
@@ -45,7 +47,6 @@ data$uci95 <- data$b + (data$se * 1.96)
 # }
 
 
-## ai slop code:
 # Assume 'key' is something like 'Method1_A', 'Method2_A', etc.
 # First, extract 'method' grouping for spacing
 data <- data %>%
@@ -79,12 +80,45 @@ vline_data <- data.frame(
 )
 
 # Plot
-combined_plot <- ggplot(data, aes(y = y_pos, x = b, xmin = lci95, xmax = uci95, color = factor(setup_mode))) +
-  geom_point() +
-  geom_errorbarh(height = 0.15) +
+combined_plot <- ggplot(
+  data,
+  aes(
+    y = y_pos,
+    x = b,
+    xmin = lci95,
+    xmax = uci95,
+    color = factor(setup_mode)
+  )
+) +
+  ## Point estimate
+  geom_point(size = 2) +
+  
+  ## Analytic (within-replicate) CI — WIDE
+  geom_errorbarh(
+    height = 0.18,
+    linewidth = 0.8,
+    alpha = 0.6
+  ) +
+  
+  ## Monte Carlo CI — NARROW (new layer)
+  geom_errorbarh(
+    aes(xmin = mc_lci, xmax = mc_uci),
+    height = 0.08,
+    linewidth = 1.1,
+    color = "black",
+    inherit.aes = TRUE
+  ) +
+  
+  ## Reference lines
   geom_vline(xintercept = 0, color = "black") +
-  geom_vline(data = vline_data, aes(xintercept = xintercept), 
-                         linetype = "dashed", color = "red") +
+  geom_vline(
+    data = vline_data,
+    aes(xintercept = xintercept),
+    linetype = "dashed",
+    color = "red"
+  ) +
+  
+  ## Axes & facets
   scale_y_continuous(
     breaks = y_labels$key_id,
     labels = y_labels$key
