@@ -3,9 +3,13 @@ Code to simulate data and run mvmr ancestry ajustment
 
 Code is in 3 branches representing seperate simulation settings:
 
+
 main- Main MVMR simualtions 
+
 LD_mod_extra_run - Between sample heterogeneity simulations
+
 realism_sims- MVMR sims using observed allele frequency patterns.
+
 
 See specific README for details.
 
