@@ -1,13 +1,12 @@
 library(ggplot2)
 library(TwoSampleMR)
 
-data <- read.table("/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/averaged_ld_sims_results.txt", header=T)
+data <- read.table("/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/LD_sims_MC_CIS.csv", header=T)
 
 # data <- data[!(data$exposure==2),]
 
-data$key <- paste0(data$model,"-", data$method ,"-",data$LD_mod)
+data$key <- paste0(data$model,"-",data$LD_mod)
 
-data$labels <- c("IVW - exposure 1", "MVMR - exposure 1","IVW - exposure 1", "MVMR - exposure 1", "IVW - exposure 1", "MVMR - exposure 1", "IVW - exposure 1", "MVMR - exposure 1")
 
 data <- data %>%
   mutate(
@@ -35,22 +34,83 @@ y_labels <- data %>%
 
 # Red line only in models B and D
 
+mc_offset <- 0.5   # controls vertical separation (tune if needed)
 
-# Plot
-combined_plot <- ggplot(data, aes(y = y_pos, x = b, xmin = lci, xmax = uci, color = factor(model))) +
-  geom_point() +
-  geom_errorbar(height = 0.15) +
-  geom_vline(xintercept = 0.4, 
-             linetype = "dashed", color = "red") +
+data <- data %>%
+  mutate(
+    y_pos_mc = y_pos - mc_offset
+  )
+
+
+
+combined_plot <- ggplot(
+  data,
+  aes(
+    y = y_pos,
+    x = b,
+    xmin = lci,
+    xmax = uci,
+    color = factor(model)
+  )
+) +
+  ## Main point estimate
+  geom_point(size = 2) +
+  
+  ## Main (analytic / bootstrap) CI
+  geom_errorbar(
+    height = 0.18,
+    linewidth = 0.8,
+    alpha = 0.6
+  ) +
+  
+  ## Monte Carlo CI — jittered BELOW  🔽
+  geom_errorbar(
+    aes(
+      y = y_pos_mc,
+      xmin = mc_lci,
+      xmax = mc_uci
+    ),
+    height = 0.06,
+    linewidth = 1.1,
+    color = "black",
+    inherit.aes = FALSE
+  ) +
+  
+  ## Optional: MC point estimate (nice touch)
+  geom_point(
+    aes(
+      y = y_pos_mc,
+      x = b
+    ),
+    size = 1.6,
+    color = "black",
+    inherit.aes = FALSE
+  ) +
+  
+  ## Reference line
+  geom_vline(
+    xintercept = 0.4,
+    linetype = "dashed",
+    color = "red"
+  ) +
+  
+  ## Axes & facets
   scale_y_continuous(
-    breaks = y_labels$LD_mod,
-    labels = y_labels$LD_mod
+    breaks = y_labels$key_id,
+    labels = y_labels$key
   ) +
   facet_wrap(~ LD_mod, scales = "free_y") +
   xlab("Beta") +
-  ylab("Model / Mode") +
+  ylab("Model / LD mode") +
   theme_bw() +
   labs(color = "Model") +
-  xlim(0.2, 0.6)
+  xlim(0.2, 0.6) + theme(
+    axis.text.y  = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank(), 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+    
+  )
 
 print(combined_plot)
