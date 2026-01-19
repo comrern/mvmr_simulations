@@ -17,20 +17,31 @@ reps= 10000
     
     rep_res <- data.frame()
     setup_mode = 2
-    for (model in c("A","B","C","D","E") ){
+    for (model in c("A","B","C","D") ){
       params <- setup(setup_mode, model)
       b1 = params[4]
       b2 = params[5]
       
       
-      row_res <- as.data.frame(matrix(NA, nrow = 3, ncol = 7))
-      colnames(row_res) <- c("model","exposure","b","se","Q_pct","mean_Qsnps","cov_b")
-      row_res$model <- c(model, model, model)
-      row_res$exposure <- c(1,1,2)
+      row_res <- as.data.frame(matrix(NA, nrow = 1, ncol = 6))
+      colnames(row_res) <- c("model","b","se","Q_pct","mean_Qsnps","cov_b")
+      row_res$model <- model
 
       
       results_mode <-single_model_res[single_model_res$mode == model,]
      
+      ## beta vectors for MC CIs
+      b_ivw_1  <- results_mode$b
+
+      
+      ## calculate MC CIs
+      row_res$mc_lci <- quantile(b_ivw_1,  probs = 0.025, na.rm = TRUE)
+
+      
+      
+      row_res$mc_uci <-  quantile(b_ivw_1,  probs = 0.975, na.rm = TRUE)
+      
+      
          b1 <- rep(b1, time=nrow(results_mode))
       
         row_res$b     <- mean(results_mode$b, na.rm=T)
@@ -40,9 +51,8 @@ reps= 10000
         row_res$F_stat <- mean(results_mode$F_stat, na.rm=T)
         row_res$mse <- mean((results_mode$b - b1)^2, na.rm=T)
         row_res$nsnp <- mean(results_mode$nsnp, na.rm = T)
-        row_res$meanQ <- mean(as.numeric(results_mode$Q), na.rm= T)
         row_res$Q_pct <- (sum(as.numeric(results_mode$Qpval) < 0.05) / reps ) * 100
-        row_res$mean_Qsnps <- mean(as.numeric(results_mode$Q_pct))  
+        row_res$mean_Qsnps <- mean(as.numeric(results_mode$Q_pct), na.rm=T)  
         row_res$mean_Isq <- mean(as.numeric(results_mode$Isq))
       ## calculate coverage
       
@@ -67,12 +77,12 @@ reps= 10000
     avg_res <-rbind(avg_res,mode_res)
   
   
-  avg_res <- avg_res %>%
-    mutate(across(c(b, se, cov_b, sig, bias, F_stat, nsnp, mse, lci, uci), as.numeric))  # Replace with actual column names
-  
+  # avg_res <- avg_res %>%
+  #   mutate(across(c(b, se, cov_b, sig, bias, F_stat, nsnp, mse, lci, uci), as.numeric))  # Replace with actual column names
+  # 
   avg_res$cov_p <- (avg_res$cov_b/ reps)*100
   
-  avg_res <- unique(avg_res[avg_res$exposure ==1,])
+  # avg_res <- unique(avg_res[avg_res$exposure ==1,])
   
-  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/averaged_ld_sims_results.txt")
+  write.table(avg_res, "C:/Users/kb22541/Desktop/Analyses/simulation/mvmr_simulations/results/LD_sims_MC_CIS.csv")
  
