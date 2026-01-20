@@ -65,7 +65,7 @@ data <- data %>%
 # Offset y by setup.mode to avoid overlap
 data <- data %>%
   mutate(
-    setup_mode_offset = (as.numeric(factor(setup_mode)) - 2.5) * 0.25,
+    setup_mode_offset = (as.numeric(factor(setup_mode)) - 2.5) * 0.5,
     y_pos = key_id + setup_mode_offset
   )
 
