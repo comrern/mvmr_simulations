@@ -34,7 +34,7 @@ y_labels <- data %>%
 
 # Red line only in models B and D
 
-mc_offset <- 0.5   # controls vertical separation (tune if needed)
+mc_offset <- 0.8   # controls vertical separation (tune if needed)
 
 data <- data %>%
   mutate(
@@ -58,7 +58,7 @@ combined_plot <- ggplot(
   
   ## Main (analytic / bootstrap) CI
   geom_errorbar(
-    height = 0.18,
+    height = 1,
     linewidth = 0.8,
     alpha = 0.6
   ) +
@@ -70,22 +70,11 @@ combined_plot <- ggplot(
       xmin = mc_lci,
       xmax = mc_uci
     ),
-    height = 0.06,
-    linewidth = 1.1,
+    height = 0.8,
+    linewidth = 0.8,
     color = "black",
-    inherit.aes = FALSE
   ) +
   
-  ## Optional: MC point estimate (nice touch)
-  geom_point(
-    aes(
-      y = y_pos_mc,
-      x = b
-    ),
-    size = 1.6,
-    color = "black",
-    inherit.aes = FALSE
-  ) +
   
   ## Reference line
   geom_vline(
