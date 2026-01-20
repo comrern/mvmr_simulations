@@ -90,23 +90,24 @@ combined_plot <- ggplot(
     color = factor(setup_mode)
   )
 ) +
-  ## Point estimate
+  ## Point estimate (keep centered)
   geom_point(size = 2) +
   
-  ## Analytic (within-replicate) CI — WIDE
+  ## Analytic CI — nudged slightly UP
   geom_errorbarh(
     height = 0.18,
     linewidth = 0.8,
     alpha = 0.6
   ) +
   
-  ## Monte Carlo CI — NARROW (new layer)
+  ## Monte Carlo CI — nudged slightly DOWN
   geom_errorbarh(
     aes(xmin = mc_lci, xmax = mc_uci),
     height = 0.08,
-    linewidth = 1.1,
+    linewidth = 0.8,
     color = "black",
-    inherit.aes = TRUE
+    inherit.aes = TRUE,
+    position = position_nudge(y = -0.08)
   ) +
   
   ## Reference lines
